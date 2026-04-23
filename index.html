@@ -65,10 +65,15 @@
   .sbar{height:2px;flex:1;border-radius:2px}
   .sb1{background:linear-gradient(90deg,var(--vns1),transparent)}
   .sb2{background:linear-gradient(90deg,var(--vns2),transparent)}
-  .card{border-radius:var(--r);margin-bottom:10px;overflow:hidden;background:var(--surface)}
+  .card{border-radius:var(--r);margin-bottom:10px;overflow:hidden;background:var(--surface);position:relative}
   .card.c1{border:1px solid var(--vns1b);border-left:4px solid var(--vns1)}
   .card.c2{border:1px solid var(--vns2b);border-left:4px solid var(--vns2)}
   .card.spro{border-left-color:var(--blue)!important}
+  .card.spro::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,transparent 0%,transparent 30%,#38bdf8 50%,transparent 70%,transparent 100%);background-size:100% 300%;animation:loadBlue 1.6s linear infinite;pointer-events:none}
+  @keyframes loadBlue{
+    0%{background-position:0% 100%}
+    100%{background-position:0% -100%}
+  }
   .card.sfin{opacity:.5}
   .card.ssus{opacity:.4;border-left-color:var(--orange)!important}
   .ch{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid var(--border)}
@@ -328,7 +333,6 @@ function loadDate(d){
   const q = query(col, where('date','==',dateKey(currentDate)));
   unsub = onSnapshot(q,(s)=>{
     const newAll = s.docs.map(d=>({id:d.id,...d.data()}));
-    // Detecta mudanças para notificar
     if(!firstLoad && isAdmin){
       for(const surg of newAll){
         const prev = prevStatus[surg.id];
@@ -521,7 +525,6 @@ window.doImport = async ()=>{
   window.closeImp();
 };
 
-// Notificações
 window.openNotifs = ()=>{
   renderNotifList();
   notifs.forEach(n=>n.read=true);
