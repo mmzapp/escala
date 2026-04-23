@@ -15,8 +15,12 @@
   .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--vns1),var(--vns2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
   .logo h1{font-size:18px;font-weight:700;color:#fff}
   .logo p{font-size:11px;color:var(--muted);margin-top:-2px}
-  .hdr-btns{display:flex;gap:6px}
+  .hdr-btns{display:flex;gap:6px;flex-wrap:wrap}
   .hdr-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif}
+  .hdr-btn.admin{background:rgba(0,229,160,.12);border-color:var(--vns1);color:var(--vns1)}
+  .hdr-btn.locked{background:rgba(100,116,139,.12)}
+  .admin-bar{background:rgba(0,229,160,.08);border-bottom:1px solid var(--vns1b);padding:6px 20px;font-size:11px;color:var(--vns1);display:none;align-items:center;justify-content:space-between}
+  .admin-bar.on{display:flex}
   .date-nav{display:flex;align-items:center;gap:8px;padding:12px 20px 0}
   .dnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .date-display{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;text-align:center;cursor:pointer}
@@ -39,7 +43,8 @@
   .sn{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;line-height:1}
   .sl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase}
   .st .sn{color:var(--blue)}.sv1 .sn{color:var(--vns1)}.sv2 .sn{color:var(--vns2)}
-  .add-btns{display:flex;gap:10px;margin:14px 20px 0}
+  .add-btns{display:none;gap:10px;margin:14px 20px 0}
+  .add-btns.on{display:flex}
   .add-btn{flex:1;border:none;border-radius:var(--r);padding:13px 10px;font-size:14px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer}
   .add-btn.v1{background:linear-gradient(135deg,var(--vns1),#00c489);color:#0a0f1e}
   .add-btn.v2{background:linear-gradient(135deg,var(--vns2),#7c3aed);color:#fff}
@@ -81,7 +86,8 @@
   .pfi{background:rgba(100,116,139,.12);color:var(--muted)}
   .psu{background:rgba(251,146,60,.12);color:var(--orange)}
   .wbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:9px;color:#25d366;font-size:12px;font-weight:700;text-decoration:none}
-  .edit-row{grid-column:1/-1;display:flex;gap:8px;margin-top:4px}
+  .edit-row{grid-column:1/-1;display:none;gap:8px;margin-top:4px}
+  .edit-row.on{display:flex}
   .ecb{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;border:none}
   .ecb.eb{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--warn)}
   .ecb.db{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--danger)}
@@ -118,12 +124,12 @@
 <header>
   <div class="ht">
     <div class="logo"><div class="logo-icon">🏥</div><div><h1>Escala VNS</h1><p>Centro Cirúrgico</p></div></div>
-    <div class="hdr-btns">
-      <button class="hdr-btn" onclick="openImport()">📋 Importar</button>
-      <button class="hdr-btn" onclick="openAnestList()">👥</button>
+    <div class="hdr-btns" id="hdrBtns">
+      <button class="hdr-btn locked" id="btnLogin" onclick="openLogin()">🔐 Admin</button>
     </div>
   </div>
 </header>
+<div class="admin-bar" id="adminBar"><span>✅ Modo administrador ativo</span><button class="hdr-btn" onclick="logout()">Sair</button></div>
 <div class="date-nav">
   <button class="dnav-btn" onclick="changeDay(-1)">‹</button>
   <div class="date-display" id="dateDisplay" onclick="openDatePicker()">
@@ -140,11 +146,17 @@
   <div class="stat sv1"><div class="sn" id="sV1">0</div><div class="sl">VNS 1</div></div>
   <div class="stat sv2"><div class="sn" id="sV2">0</div><div class="sl">VNS 2</div></div>
 </div>
-<div class="add-btns">
+<div class="add-btns" id="addBtns">
   <button class="add-btn v1" onclick="openModal('vns1',null)">＋ VNS 1</button>
   <button class="add-btn v2" onclick="openModal('vns2',null)">＋ VNS 2</button>
 </div>
 <div class="tw" id="mainList"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+
+<div class="ov" id="lOv"><div class="modal">
+  <div class="mh"></div><h2>🔐 Acesso Administrador</h2>
+  <div class="ff"><label>Senha</label><input type="password" id="lPwd" placeholder="Digite a senha"/></div>
+  <div class="mbtns"><button class="bcn" onclick="closeLogin()">Cancelar</button><button class="bsv v1" onclick="doLogin()">Entrar ✓</button></div>
+</div></div>
 
 <div class="ov" id="dpOv"><div class="modal">
   <div class="mh"></div><h2>📅 Ir para uma data</h2>
@@ -177,11 +189,10 @@
   <div class="imp-info">Cole o mapa no formato:<br>
   <b>VNS1</b><br>
   05:00 - Cirurgia - Cirurgião<br>
-  06:00 - Outra - Dr(a)<br>
   <b>VNS2</b><br>
   07:00 - Cirurgia - Cirurgião<br><br>
-  As cirurgias serão adicionadas na <b>data selecionada no topo</b>.</div>
-  <div class="ff"><label>Cole a lista aqui</label><textarea id="iTxt" placeholder="VNS1&#10;05:00 - RNM 1208&#10;06:00 - Septoplastia - Salomão&#10;&#10;VNS2&#10;07:00 - Colecistectomia - Mari Mello"></textarea></div>
+  Cirurgias serão adicionadas na <b>data selecionada</b>.</div>
+  <div class="ff"><label>Cole a lista aqui</label><textarea id="iTxt"></textarea></div>
   <div class="mbtns"><button class="bcn" onclick="closeImp()">Cancelar</button><button class="bsv v1" onclick="doImport()">Importar ✓</button></div>
 </div></div>
 
@@ -199,6 +210,7 @@ const firebaseConfig = {
   messagingSenderId: "913644431265",
   appId: "1:913644431265:web:8a492e0d9ad3ee190c0de0"
 };
+const ADMIN_PWD = "Escalavnsmai";
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const col = collection(db, 'cirurgias');
@@ -208,6 +220,7 @@ const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov
 
 let currentDate = new Date(); currentDate.setHours(0,0,0,0);
 let unsub = null, all = [], anests = [], editId = null, sala = 'vns1';
+let isAdmin = localStorage.getItem('escalavns_admin')==='1';
 
 function dateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
@@ -218,6 +231,22 @@ function fmt(d){
   dd.className = 'date-display '+(diff===0?'today':diff>0?'future':'past');
   document.getElementById('ddDay').textContent = days[d.getDay()];
   document.getElementById('ddDate').textContent = `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function updateAdminUI(){
+  const bar = document.getElementById('adminBar');
+  const addB = document.getElementById('addBtns');
+  const hb = document.getElementById('hdrBtns');
+  if(isAdmin){
+    bar.classList.add('on');
+    addB.classList.add('on');
+    hb.innerHTML = '<button class="hdr-btn" onclick="openImport()">📋 Importar</button><button class="hdr-btn" onclick="openAnestList()">👥</button>';
+  } else {
+    bar.classList.remove('on');
+    addB.classList.remove('on');
+    hb.innerHTML = '<button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>';
+  }
+  render();
 }
 
 function loadDate(d){
@@ -271,10 +300,14 @@ function card(s){
   else if(s.status==='finished'){sc='sfin';pl=`<span class="pill pfi">✅ Finalizada</span>`;c3='afin';}
   else if(s.status==='suspended'){sc='ssus';pl=`<span class="pill psu">❌ Suspensa</span>`;c4='asus';}
   else pl=`<span class="pill pp">⏳ Aguardando</span>`;
-  const wa = s.phone ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank">📲 Avisar Anestesista</a></div>` : '';
+  const wa = (s.phone && isAdmin) ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank">📲 Avisar Anestesista</a></div>` : '';
   const leito = s.leito ? `<div class="ir"><span class="il">Leito</span><span class="iv">${s.leito}</span></div>` : '';
   const sur = s.surgeon || 'A definir';
   const ane = s.anest || 'A definir';
+  const editBtns = isAdmin ? `<div class="edit-row on">
+      <button class="ecb eb" onclick="window.openModal('${s.sala}','${s.id}')">✏️ Editar</button>
+      <button class="ecb db" onclick="window.confDel('${s.id}','${s.name}')">🗑️ Excluir</button>
+    </div>` : '';
   return `<div class="card ${v1?'c1':'c2'} ${sc}"><div class="ch"><span class="tb">${s.time}</span><div class="sbg">
     <button class="sbtn ${c1}" onclick="window.setSt('${s.id}','confirmed')">👍</button>
     <button class="sbtn ${c2}" onclick="window.setSt('${s.id}','in-progress')">🔵</button>
@@ -286,10 +319,7 @@ function card(s){
     <div class="ir"><span class="il">Anestesista</span><span class="iv">${ane}</span></div>
     ${leito}
     ${wa}
-    <div class="edit-row">
-      <button class="ecb eb" onclick="window.openModal('${s.sala}','${s.id}')">✏️ Editar</button>
-      <button class="ecb db" onclick="window.confDel('${s.id}','${s.name}')">🗑️ Excluir</button>
-    </div>
+    ${editBtns}
   </div></div>`;
 }
 
@@ -309,13 +339,23 @@ window.setSt = async (id,st)=>{
   await updateDoc(doc(db,'cirurgias',id),{status:n});
   toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',pending:'⏳ Removido'}[n]);
 };
-window.confDel = async (id,n)=>{ if(confirm(`Excluir "${n}"?`)){ await deleteDoc(doc(db,'cirurgias',id)); toast('🗑️ Excluída'); } };
+window.confDel = async (id,n)=>{ if(!isAdmin){toast('⚠️ Só admin');return;} if(confirm(`Excluir "${n}"?`)){ await deleteDoc(doc(db,'cirurgias',id)); toast('🗑️ Excluída'); } };
 window.changeDay = (n)=>{ const d=new Date(currentDate); d.setDate(d.getDate()+n); loadDate(d); };
 window.openDatePicker = ()=>{ document.getElementById('dpInput').value=dateKey(currentDate); document.getElementById('dpOv').classList.add('open'); };
 window.closeDP = ()=>document.getElementById('dpOv').classList.remove('open');
 window.confirmDate = ()=>{ const v=document.getElementById('dpInput').value; if(!v) return; const [y,m,d]=v.split('-').map(Number); loadDate(new Date(y,m-1,d)); window.closeDP(); };
 
+window.openLogin = ()=>{ document.getElementById('lPwd').value=''; document.getElementById('lOv').classList.add('open'); };
+window.closeLogin = ()=>document.getElementById('lOv').classList.remove('open');
+window.doLogin = ()=>{
+  const p = document.getElementById('lPwd').value;
+  if(p===ADMIN_PWD){ isAdmin=true; localStorage.setItem('escalavns_admin','1'); updateAdminUI(); window.closeLogin(); toast('✅ Admin ativo'); }
+  else toast('❌ Senha incorreta');
+};
+window.logout = ()=>{ isAdmin=false; localStorage.removeItem('escalavns_admin'); updateAdminUI(); toast('👋 Modo leitura'); };
+
 window.openModal = (sl,id)=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
   editId=id; sala=sl;
   const ex = id?all.find(x=>x.id===id):null;
   document.getElementById('fSala').value = ex?ex.sala:sl;
@@ -337,6 +377,7 @@ window.openModal = (sl,id)=>{
 window.closeMod = ()=>{ document.getElementById('sOv').classList.remove('open'); editId=null; };
 
 window.saveSurg = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
   const salaEsc=document.getElementById('fSala').value, t=document.getElementById('fT').value, n=document.getElementById('fN').value.trim(), sr=document.getElementById('fS').value.trim(), l=document.getElementById('fL').value.trim(), aId=document.getElementById('fA').value;
   if(!t||!n){ toast('⚠️ Preencha horário e cirurgia'); return; }
   let anestName='', phone='';
@@ -347,16 +388,17 @@ window.saveSurg = async ()=>{
   window.closeMod();
 };
 
-window.openAnestList = ()=>document.getElementById('aOv').classList.add('open');
+window.openAnestList = ()=>{ if(!isAdmin){toast('⚠️ Só admin');return;} document.getElementById('aOv').classList.add('open'); };
 window.closeAL = ()=>document.getElementById('aOv').classList.remove('open');
 window.addAnest = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
   const n=document.getElementById('aN').value.trim(), p=document.getElementById('aP').value.trim().replace(/\D/g,'');
   if(!n){ toast('⚠️ Digite o nome'); return; }
   await addDoc(colA,{name:n,phone:p});
   document.getElementById('aN').value=''; document.getElementById('aP').value='';
   toast('✅ Cadastrado');
 };
-window.delAnest = async (id,n)=>{ if(confirm(`Remover ${n}?`)){ await deleteDoc(doc(db,'anestesistas',id)); toast('🗑️ Removido'); } };
+window.delAnest = async (id,n)=>{ if(!isAdmin){toast('⚠️ Só admin');return;} if(confirm(`Remover ${n}?`)){ await deleteDoc(doc(db,'anestesistas',id)); toast('🗑️ Removido'); } };
 
 function renderAnestList(){
   const el = document.getElementById('anestList');
@@ -364,9 +406,10 @@ function renderAnestList(){
   el.innerHTML = anests.map(a=>`<div class="anest-item"><div><div class="anest-name">${a.name}</div>${a.phone?`<div class="anest-phone">${a.phone}</div>`:''}</div><button class="anest-del" onclick="window.delAnest('${a.id}','${a.name}')">✕</button></div>`).join('');
 }
 
-window.openImport = ()=>{ document.getElementById('iTxt').value=''; document.getElementById('iOv').classList.add('open'); };
+window.openImport = ()=>{ if(!isAdmin){toast('⚠️ Só admin');return;} document.getElementById('iTxt').value=''; document.getElementById('iOv').classList.add('open'); };
 window.closeImp = ()=>document.getElementById('iOv').classList.remove('open');
 window.doImport = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
   const txt = document.getElementById('iTxt').value;
   if(!txt.trim()){ toast('⚠️ Cole a lista'); return; }
   const lines = txt.split('\n').map(l=>l.trim()).filter(l=>l);
@@ -399,7 +442,9 @@ document.getElementById('sOv').addEventListener('click',e=>{ if(e.target.id==='s
 document.getElementById('dpOv').addEventListener('click',e=>{ if(e.target.id==='dpOv') window.closeDP(); });
 document.getElementById('aOv').addEventListener('click',e=>{ if(e.target.id==='aOv') window.closeAL(); });
 document.getElementById('iOv').addEventListener('click',e=>{ if(e.target.id==='iOv') window.closeImp(); });
+document.getElementById('lOv').addEventListener('click',e=>{ if(e.target.id==='lOv') window.closeLogin(); });
 
+updateAdminUI();
 loadDate(new Date());
 </script>
 </body>
