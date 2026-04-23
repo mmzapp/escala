@@ -154,6 +154,7 @@
 
 <div class="ov" id="sOv"><div class="modal">
   <div class="mh"></div><h2 id="mTitle">Nova Cirurgia</h2>
+  <div class="ff"><label>Torre</label><select id="fSala"><option value="vns1">VNS 1</option><option value="vns2">VNS 2</option></select></div>
   <div class="ff"><label>Horário</label><input type="time" id="fT"/></div>
   <div class="ff"><label>Nome da Cirurgia</label><input type="text" id="fN" placeholder="Ex: Apendicectomia"/></div>
   <div class="ff"><label>Cirurgião</label><input type="text" id="fS" placeholder="Dr(a). Nome"/></div>
@@ -297,7 +298,7 @@ function waLink(s){
   const diff = Math.round((currentDate-t)/86400000);
   const lbl = diff===0?'hoje':diff===1?'amanhã':`${String(currentDate.getDate()).padStart(2,'0')}/${currentDate.getMonth()+1}`;
   const leitoTxt = s.leito ? ` Leito: *${s.leito}*.` : '';
-  const m = `Olá Dr(a). ${s.anest}! Você foi escalado(a) para *${s.name}* às *${s.time}* ${lbl} no *${s.sala.toUpperCase()}*. Cirurgião: ${s.surgeon||'a definir'}.${leitoTxt} ✅`;
+  const m = `Olá Dr(a). ${s.anest}! Você foi escalado(a) para *${s.name}* às *${s.time}* ${lbl} na *${s.sala.toUpperCase()}*. Cirurgião: ${s.surgeon||'a definir'}.${leitoTxt} ✅`;
   const p = s.phone.startsWith('55')?s.phone:'55'+s.phone;
   return `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
 }
@@ -317,6 +318,7 @@ window.confirmDate = ()=>{ const v=document.getElementById('dpInput').value; if(
 window.openModal = (sl,id)=>{
   editId=id; sala=sl;
   const ex = id?all.find(x=>x.id===id):null;
+  document.getElementById('fSala').value = ex?ex.sala:sl;
   document.getElementById('fT').value = ex?ex.time:'';
   document.getElementById('fN').value = ex?ex.name:'';
   document.getElementById('fS').value = ex?(ex.surgeon||''):'';
@@ -326,7 +328,7 @@ window.openModal = (sl,id)=>{
     const match = anests.find(a=>a.name===ex.anest);
     document.getElementById('fA').value = match?match.id:'';
   } else document.getElementById('fA').value = '';
-  document.getElementById('mTitle').textContent = ex?`Editar — ${sl.toUpperCase()}`:`Nova — ${sl.toUpperCase()}`;
+  document.getElementById('mTitle').textContent = ex?`Editar Cirurgia`:`Nova — ${sl.toUpperCase()}`;
   const b = document.getElementById('bSav');
   b.className = `bsv ${ex?'ed':(sl==='vns1'?'v1':'v2')}`;
   b.textContent = 'Salvar ✓';
@@ -335,13 +337,13 @@ window.openModal = (sl,id)=>{
 window.closeMod = ()=>{ document.getElementById('sOv').classList.remove('open'); editId=null; };
 
 window.saveSurg = async ()=>{
-  const t=document.getElementById('fT').value, n=document.getElementById('fN').value.trim(), sr=document.getElementById('fS').value.trim(), l=document.getElementById('fL').value.trim(), aId=document.getElementById('fA').value;
+  const salaEsc=document.getElementById('fSala').value, t=document.getElementById('fT').value, n=document.getElementById('fN').value.trim(), sr=document.getElementById('fS').value.trim(), l=document.getElementById('fL').value.trim(), aId=document.getElementById('fA').value;
   if(!t||!n){ toast('⚠️ Preencha horário e cirurgia'); return; }
   let anestName='', phone='';
   if(aId){ const a = anests.find(x=>x.id===aId); if(a){ anestName=a.name; phone=a.phone||''; } }
-  const dt = {sala,date:dateKey(currentDate),time:t,name:n,surgeon:sr,leito:l,anest:anestName,phone};
+  const dt = {sala:salaEsc,date:dateKey(currentDate),time:t,name:n,surgeon:sr,leito:l,anest:anestName,phone};
   if(editId){ await updateDoc(doc(db,'cirurgias',editId),dt); toast('✏️ Atualizada'); }
-  else { await addDoc(col,{...dt,status:'pending'}); toast(`✅ Adicionada em ${sala.toUpperCase()}`); }
+  else { await addDoc(col,{...dt,status:'pending'}); toast(`✅ Adicionada em ${salaEsc.toUpperCase()}`); }
   window.closeMod();
 };
 
@@ -362,7 +364,6 @@ function renderAnestList(){
   el.innerHTML = anests.map(a=>`<div class="anest-item"><div><div class="anest-name">${a.name}</div>${a.phone?`<div class="anest-phone">${a.phone}</div>`:''}</div><button class="anest-del" onclick="window.delAnest('${a.id}','${a.name}')">✕</button></div>`).join('');
 }
 
-// IMPORTAÇÃO EM MASSA
 window.openImport = ()=>{ document.getElementById('iTxt').value=''; document.getElementById('iOv').classList.add('open'); };
 window.closeImp = ()=>document.getElementById('iOv').classList.remove('open');
 window.doImport = async ()=>{
