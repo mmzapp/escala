@@ -15,17 +15,33 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;padding:0 0 80px;}
-  header{background:linear-gradient(135deg,#0d1b2e,#0a0f1e);border-bottom:1px solid var(--border);padding:18px 20px 14px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+  header{background:linear-gradient(135deg,#0d1b2e,#0a0f1e);border-bottom:1px solid var(--border);padding:16px 20px 14px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
   .ht{display:flex;align-items:center;justify-content:space-between;}
   .logo{display:flex;align-items:center;gap:10px;}
   .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--vns1),var(--vns2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
   .logo h1{font-size:18px;font-weight:700;letter-spacing:-.5px;color:#fff;}
   .logo p{font-size:11px;color:var(--muted);font-weight:300;margin-top:-2px;}
-  .date-b{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:12px;color:var(--vns1);text-align:right;}
-  .date-b .dn{color:var(--muted);font-size:10px;display:block;}
+  .date-nav{display:flex;align-items:center;gap:8px;padding:12px 20px 0;}
+  .dnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+  .dnav-btn:active{transform:scale(.9);}
+  .date-display{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;text-align:center;cursor:pointer;}
+  .date-display .dd-day{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
+  .date-display .dd-date{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--vns1);}
+  .date-display.future .dd-date{color:var(--blue);}
+  .date-display.past .dd-date{color:var(--muted);}
+  .today-badge{display:none;font-size:9px;background:rgba(0,229,160,.1);color:var(--vns1);border:1px solid var(--vns1b);padding:2px 7px;border-radius:20px;margin-top:3px;}
+  .date-display.today .today-badge{display:inline-block;}
+  .dp-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+  .dp-ov.open{display:flex;}
+  .dp-modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:600px;animation:su .28s ease;border-top:1px solid var(--border);}
+  .dp-modal h3{font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;}
+  .dp-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace;outline:none;}
+  .dp-btns{display:flex;gap:10px;margin-top:16px;}
+  .dp-cancel{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:14px;font-size:15px;font-family:'Sora',sans-serif;cursor:pointer;font-weight:600;}
+  .dp-ok{flex:2;background:linear-gradient(135deg,var(--vns1),#00c489);border:none;color:#0a0f1e;border-radius:12px;padding:14px;font-size:15px;font-family:'Sora',sans-serif;cursor:pointer;font-weight:700;}
+  .sync-row{display:flex;align-items:center;padding:8px 20px 0;font-size:10px;color:var(--muted);}
   .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:4px;transition:background .3s;}
   .sync-dot.live{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.6);}
-  .sync-row{display:flex;align-items:center;padding:8px 20px 0;font-size:10px;color:var(--muted);}
   .legend{display:flex;gap:14px;padding:10px 20px 0;align-items:center;flex-wrap:wrap;}
   .li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;}
   .ld{width:9px;height:9px;border-radius:3px;}
@@ -127,9 +143,17 @@
       <div class="logo-icon">🏥</div>
       <div><h1>Escala VNS</h1><p>Centro Cirúrgico</p></div>
     </div>
-    <div class="date-b"><span class="dn" id="dayName"></span><span id="dateStr"></span></div>
   </div>
 </header>
+<div class="date-nav">
+  <button class="dnav-btn" onclick="changeDay(-1)">‹</button>
+  <div class="date-display" id="dateDisplay" onclick="openDatePicker()">
+    <div class="dd-day" id="ddDay"></div>
+    <div class="dd-date" id="ddDate"></div>
+    <div class="today-badge">Hoje</div>
+  </div>
+  <button class="dnav-btn" onclick="changeDay(1)">›</button>
+</div>
 <div class="sync-row"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Conectando...</span></div>
 <div class="legend">
   <div class="li l1"><span class="ld ld1"></span> VNS 1</div>
@@ -145,8 +169,17 @@
   <button class="add-btn v1" onclick="openModal('vns1',null)">＋ VNS 1</button>
   <button class="add-btn v2" onclick="openModal('vns2',null)">＋ VNS 2</button>
 </div>
-<div class="tw" id="mainList">
-  <div class="loading"><div class="spinner"></div><p>Carregando escala...</p></div>
+<div class="tw" id="mainList"><div class="loading"><div class="spinner"></div><p>Carregando escala...</p></div></div>
+<div class="dp-ov" id="dpOv">
+  <div class="dp-modal">
+    <div class="mh"></div>
+    <h3>📅 Ir para uma data</h3>
+    <input type="date" class="dp-input" id="dpInput"/>
+    <div class="dp-btns">
+      <button class="dp-cancel" onclick="closeDatePicker()">Cancelar</button>
+      <button class="dp-ok" onclick="confirmDate()">Ir para esta data ✓</button>
+    </div>
+  </div>
 </div>
 <div class="ov" id="sOv">
   <div class="modal">
@@ -178,90 +211,38 @@
   };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const today = new Date().toISOString().split('T')[0];
   const col = collection(db, 'cirurgias');
-  const q = query(col, where('date', '==', today));
   const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const now = new Date();
-  document.getElementById('dayName').textContent = days[now.getDay()];
-  document.getElementById('dateStr').textContent = `${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
-  let all = [], editId = null, sala = 'vns1';
-  onSnapshot(q, (snapshot) => {
-    all = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    document.getElementById('syncDot').className = 'sync-dot live';
-    document.getElementById('syncTxt').textContent = 'Ao vivo · atualizado agora';
-    render();
-  }, (err) => { document.getElementById('syncTxt').textContent = 'Erro de conexão'; });
-  function render() {
-    const C = document.getElementById('mainList');
-    const v1 = all.filter(s => s.sala==='vns1').sort((a,b) => a.time.localeCompare(b.time));
-    const v2 = all.filter(s => s.sala==='vns2').sort((a,b) => a.time.localeCompare(b.time));
-    document.getElementById('sT').textContent = all.length;
-    document.getElementById('sV1').textContent = v1.length;
-    document.getElementById('sV2').textContent = v2.length;
-    if (!all.length) { C.innerHTML = `<div class="empty"><div class="ei">🩺</div><p>Nenhuma cirurgia programada.<br>Use os botões acima para adicionar.</p></div>`; return; }
-    let h = '';
-    if (v1.length) { h += `<div class="sh"><span class="sl-lbl sl1">● VNS 1</span><div class="sbar sb1"></div></div>`; h += v1.map(cardHtml).join(''); }
-    if (v2.length) { h += `<div class="sh"><span class="sl-lbl sl2">● VNS 2</span><div class="sbar sb2"></div></div>`; h += v2.map(cardHtml).join(''); }
-    C.innerHTML = h;
+  let currentDate = new Date(); currentDate.setHours(0,0,0,0);
+  let unsub = null, all = [], editId = null, sala = 'vns1';
+  function dateKey(d){ return d.toISOString().split('T')[0]; }
+  function formatDisplay(d){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((d-today)/86400000);
+    const dd = document.getElementById('dateDisplay');
+    dd.className = 'date-display '+(diff===0?'today':diff>0?'future':'past');
+    document.getElementById('ddDay').textContent = days[d.getDay()];
+    document.getElementById('ddDate').textContent = `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
-  function cardHtml(s) {
-    const v1 = s.sala==='vns1';
-    let sc='',pl='',c1='',c2='',c3='',c4='';
-    if (s.status==='confirmed') { sc='scon'; pl=`<span class="pill ${v1?'pc1':'pc2'}">👍🏼 Avaliado</span>`; c1='acon'; }
-    else if (s.status==='in-progress') { sc='spro'; pl=`<span class="pill ppr">🔵 Em andamento</span>`; c2='apro'; }
-    else if (s.status==='finished') { sc='sfin'; pl=`<span class="pill pfi">✅ Finalizada</span>`; c3='afin'; }
-    else if (s.status==='suspended') { sc='ssus'; pl=`<span class="pill psu">❌ Suspensa</span>`; c4='asus'; }
-    else { pl=`<span class="pill pp">⏳ Aguardando</span>`; }
-    const wa = s.phone ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Avisar Anestesista</a></div>` : '';
-    return `<div class="card ${v1?'c1':'c2'} ${sc}"><div class="ch"><span class="tb">${s.time}</span><div class="sbg"><button class="sbtn ${c1}" onclick="window.setSt('${s.id}','confirmed')">👍</button><button class="sbtn ${c2}" onclick="window.setSt('${s.id}','in-progress')">🔵</button><button class="sbtn ${c3}" onclick="window.setSt('${s.id}','finished')">✅</button><button class="sbtn ${c4}" onclick="window.setSt('${s.id}','suspended')">❌</button></div></div><div class="cb"><div class="ir snr"><span class="il">Cirurgia</span><span class="iv">${s.name}</span>${pl}</div><div class="ir"><span class="il">Cirurgião</span><span class="iv">${s.surgeon}</span></div><div class="ir"><span class="il">Anestesista</span><span class="iv">${s.anest}</span></div>${wa}<div class="edit-row"><button class="ecb eb" onclick="window.openModal('${s.sala}','${s.id}')">✏️ Editar</button><button class="ecb db" onclick="window.confDel('${s.id}','${s.name}')">🗑️ Excluir</button></div></div></div>`;
+  function loadDate(d){
+    if(unsub) unsub();
+    currentDate = new Date(d); currentDate.setHours(0,0,0,0);
+    formatDisplay(currentDate);
+    document.getElementById('mainList').innerHTML = `<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>`;
+    document.getElementById('syncDot').className = 'sync-dot';
+    document.getElementById('syncTxt').textContent = 'Conectando...';
+    const q = query(col, where('date','==',dateKey(currentDate)));
+    unsub = onSnapshot(q, (snap)=>{
+      all = snap.docs.map(d=>({id:d.id,...d.data()}));
+      document.getElementById('syncDot').className = 'sync-dot live';
+      document.getElementById('syncTxt').textContent = 'Ao vivo · atualizado agora';
+      render();
+    }, ()=>{ document.getElementById('syncTxt').textContent = 'Erro de conexão'; });
   }
-  function waLink(s) {
-    const m = `Olá Dr(a). ${s.anest}! Você foi escalado(a) para a cirurgia *${s.name}* às *${s.time}* no *${s.sala.toUpperCase()}*. Cirurgião: ${s.surgeon}. Por favor confirme o recebimento. ✅`;
-    const p = s.phone.startsWith('55') ? s.phone : '55'+s.phone;
-    return `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
-  }
-  window.setSt = async (id, st) => {
-    const s = all.find(x => x.id===id); if (!s) return;
-    const newSt = s.status===st ? 'pending' : st;
-    await updateDoc(doc(db,'cirurgias',id), { status: newSt });
-    const L = { confirmed:'👍🏼 Avaliado!','in-progress':'🔵 Em andamento',finished:'✅ Finalizada!',suspended:'❌ Suspensa',pending:'⏳ Status removido' };
-    toast(L[newSt]||'');
-  };
-  window.confDel = async (id, name) => {
-    if (confirm(`Excluir "${name}"?`)) { await deleteDoc(doc(db,'cirurgias',id)); toast('🗑️ Excluída'); }
-  };
-  window.openModal = (sl, id) => {
-    editId=id; sala=sl;
-    const ex = id ? all.find(x => x.id===id) : null;
-    const isEdit = !!ex;
-    document.getElementById('editLblWrap').innerHTML = isEdit ? '<span class="edit-lbl">✏️ Modo Edição</span>' : '';
-    document.getElementById('fT').value = ex?ex.time:'';
-    document.getElementById('fN').value = ex?ex.name:'';
-    document.getElementById('fS').value = ex?ex.surgeon:'';
-    document.getElementById('fA').value = ex?ex.anest:'';
-    document.getElementById('fP').value = ex?(ex.phone||''):'';
-    document.getElementById('mTitle').textContent = isEdit?`Editar — ${sl.toUpperCase()}`:`Nova Cirurgia — ${sl.toUpperCase()}`;
-    document.getElementById('mDot').className = `md ${isEdit?'ed':(sl==='vns1'?'v1':'v2')}`;
-    const b = document.getElementById('bSav');
-    b.className = `bsv ${isEdit?'ed':(sl==='vns1'?'v1':'v2')}`;
-    b.textContent = isEdit?'Salvar alterações ✓':'Salvar ✓';
-    document.getElementById('sOv').classList.add('open');
-    setTimeout(()=>document.getElementById('fT').focus(),300);
-  };
-  window.closeMod = () => { document.getElementById('sOv').classList.remove('open'); editId=null; };
-  window.saveSurg = async () => {
-    const t=document.getElementById('fT').value, n=document.getElementById('fN').value.trim(),
-          sr=document.getElementById('fS').value.trim(), an=document.getElementById('fA').value.trim(),
-          ph=document.getElementById('fP').value.trim().replace(/\D/g,'');
-    if (!t||!n||!sr||!an) { toast('⚠️ Preencha todos os campos'); return; }
-    if (editId) { await updateDoc(doc(db,'cirurgias',editId),{time:t,name:n,surgeon:sr,anest:an,phone:ph}); toast('✏️ Atualizada!'); }
-    else { await addDoc(col,{sala,date:today,time:t,name:n,surgeon:sr,anest:an,phone:ph,status:'pending'}); toast(`✅ Adicionada em ${sala.toUpperCase()}!`); }
-    window.closeMod();
-  };
-  function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
-  document.getElementById('sOv').addEventListener('click', e=>{ if(e.target.id==='sOv') window.closeMod(); });
-</script>
-</body>
-</html>
+  window.changeDay = (n)=>{ const d=new Date(currentDate); d.setDate(d.getDate()+n); loadDate(d); };
+  window.openDatePicker = ()=>{ document.getElementById('dpInput').value=dateKey(currentDate); document.getElementById('dpOv').classList.add('open'); };
+  window.closeDatePicker = ()=>document.getElementById('dpOv').classList.remove('open');
+  window.confirmDate = ()=>{ const v=document.getElementById('dpInput').value; if(!v)return; const [y,m,d]=v.split('-').map(Number); loadDate(new Date(y,m-1,d)); window.closeDatePicker(); };
+  function render(){
+    const C=document.getElementById('mainList');​​​​​​​​​​​​​​​​
