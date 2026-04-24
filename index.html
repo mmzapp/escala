@@ -391,7 +391,6 @@ function card(s){
   else if(s.status==='suspended'){sc='ssus';pl=`<span class="pill psu">❌ Suspensa</span>`;c4='asus';}
   else pl=`<span class="pill pp">⏳ Aguardando</span>`;
   const wa = (s.phone && isAdmin) ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank">📲 Avisar Anestesista</a></div>` : '';
-  const leito = s.leito ? `<div class="ir"><span class="il">Leito</span><span class="iv">${s.leito}</span></div>` : '';
   const sur = s.surgeon || 'A definir';
   const ane = s.anest || 'A definir';
   const editBtns = isAdmin ? `<div class="edit-row on">
@@ -406,8 +405,8 @@ function card(s){
   </div></div><div class="cb">
     <div class="ir snr"><span class="il">Cirurgia</span><span class="iv">${s.name}</span>${pl}</div>
     <div class="ir"><span class="il">Cirurgião</span><span class="iv">${sur}</span></div>
-    <div class="ir"><span class="il">Anestesista</span><span class="iv">${ane}</span></div>
-    ${leito}
+    <div class="ir"><span class="il">Leito</span><span class="iv">${s.leito||'—'}</span></div>
+    <div class="ir snr"><span class="il">Anestesista</span><span class="iv">${ane}</span></div>
     ${wa}
     ${editBtns}
   </div></div>`;
@@ -505,82 +504,4 @@ window.doImport = async ()=>{
   if(!txt.trim()){ toast('⚠️ Cole a lista'); return; }
   importing = true;
   const lines = txt.split('\n').map(l=>l.trim()).filter(l=>l);
-  let curSala = null, count = 0, skipped = 0, duplicates = 0;
-  const dateStr = dateKey(currentDate);
-  const qExist = query(col, where('date','==',dateStr));
-  const snap = await getDocs(qExist);
-  const existing = snap.docs.map(d=>d.data());
-  const seenInThisImport = new Set();
-  for(const line of lines){
-    const u = line.toUpperCase().replace(/\s/g,'');
-    if(u==='VNS1'||u.startsWith('VNS1-')||u.startsWith('VNS1:')){ curSala='vns1'; continue; }
-    if(u==='VNS2'||u.startsWith('VNS2-')||u.startsWith('VNS2:')){ curSala='vns2'; continue; }
-    if(!curSala) continue;
-    const m = line.match(/^(\d{1,2}):(\d{2})\s*[-–]\s*(.+)$/);
-    if(!m){ skipped++; continue; }
-    const time = `${m[1].padStart(2,'0')}:${m[2]}`;
-    const rest = m[3].split(/\s*[-–]\s*/).map(x=>x.trim()).filter(x=>x);
-    if(!rest.length){ skipped++; continue; }
-    const name = rest[0];
-    const surgeon = rest[1]||'';
-    const leito = rest[2]||'';
-    const key = `${curSala}|${time}|${name.toLowerCase()}`;
-    if(seenInThisImport.has(key)){ duplicates++; continue; }
-    seenInThisImport.add(key);
-    const alreadyExists = existing.some(x=>
-      x.sala===curSala && x.time===time && (x.name||'').toLowerCase()===name.toLowerCase()
-    );
-    if(alreadyExists){ duplicates++; continue; }
-    try{
-      await addDoc(col,{sala:curSala,date:dateStr,time,name,surgeon,leito,anest:'',phone:'',status:'pending'});
-      count++;
-    }catch(e){ skipped++; }
-  }
-  importing = false;
-  let msg = `✅ ${count} importadas`;
-  if(duplicates) msg += ` · ${duplicates} duplicadas ignoradas`;
-  if(skipped) msg += ` · ${skipped} com erro`;
-  toast(msg);
-  window.closeImp();
-};
-
-window.openNotifs = ()=>{
-  renderNotifList();
-  notifs.forEach(n=>n.read=true);
-  saveNotifs();
-  document.getElementById('nOv').classList.add('open');
-  renderNotifBanner();
-  updateNotifBadge();
-};
-window.closeNotifs = ()=>document.getElementById('nOv').classList.remove('open');
-window.clearNotifs = ()=>{
-  if(confirm('Limpar todas as notificações?')){
-    notifs = []; saveNotifs(); renderNotifList(); renderNotifBanner(); updateNotifBadge();
-    toast('🔔 Notificações limpas');
-  }
-};
-window.markRead = (id)=>{
-  const n = notifs.find(x=>x.id==id);
-  if(n){ n.read=true; saveNotifs(); renderNotifBanner(); updateNotifBadge(); }
-};
-
-function renderNotifList(){
-  const el = document.getElementById('notifList');
-  if(!notifs.length){ el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhuma notificação</p>'; return; }
-  el.innerHTML = notifs.map(n=>`<div class="notif-row ${n.status==='finished'?'fin':'sus'}"><div class="notif-ttl">${n.title}</div><div class="notif-sub">${n.sub} · ${n.time}</div></div>`).join('');
-}
-
-function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
-
-document.getElementById('sOv').addEventListener('click',e=>{ if(e.target.id==='sOv') window.closeMod(); });
-document.getElementById('dpOv').addEventListener('click',e=>{ if(e.target.id==='dpOv') window.closeDP(); });
-document.getElementById('aOv').addEventListener('click',e=>{ if(e.target.id==='aOv') window.closeAL(); });
-document.getElementById('iOv').addEventListener('click',e=>{ if(e.target.id==='iOv') window.closeImp(); });
-document.getElementById('lOv').addEventListener('click',e=>{ if(e.target.id==='lOv') window.closeLogin(); });
-document.getElementById('nOv').addEventListener('click',e=>{ if(e.target.id==='nOv') window.closeNotifs(); });
-
-updateAdminUI();
-loadDate(new Date());
-</script>
-</body>
-</html>
+  let curS​​​​​​​​​​​​​​​​
