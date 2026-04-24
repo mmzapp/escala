@@ -1,564 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MovveMed</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--border:#1f2d45;--vns1:#cbd5e1;--vns1b:rgba(203,213,225,.35);--vns2:#7dd3fc;--vns2b:rgba(125,211,252,.35);--blue:#0ea5e9;--warn:#f59e0b;--danger:#ef4444;--orange:#fb923c;--red:#dc2626;--text:#e2e8f0;--muted:#64748b;--r:14px}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;padding:0 0 80px}
-  header{background:linear-gradient(135deg,#0d1b2e,#0a0f1e);border-bottom:1px solid var(--border);padding:16px 20px 14px;position:sticky;top:0;z-index:100}
-  .ht{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-  .logo{display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
-  .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--vns1),var(--vns2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
-  .logo h1{font-size:18px;font-weight:700;color:#fff}
-  .logo p{font-size:11px;color:var(--muted);margin-top:-2px}
-  .hdr-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-  .hdr-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;color:var(--text);font-size:11px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;position:relative}
-  .hdr-btn.admin{background:rgba(203,213,225,.12);border-color:var(--vns1);color:var(--vns1)}
-  .hdr-btn.locked{background:rgba(100,116,139,.12)}
-  .ham-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:3px;position:relative}
-  .ham-btn span{display:block;width:18px;height:2px;background:var(--text);border-radius:1px}
-  .badge-count{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 4px;z-index:2}
-  .badge-count.on{display:flex}
-  .ham-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);min-width:200px;z-index:150;overflow:hidden}
-  .ham-menu.on{display:block}
-  .ham-item{padding:12px 16px;font-size:14px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;background:transparent;border:none;width:100%;text-align:left;font-family:'Sora',sans-serif;font-weight:600;position:relative}
-  .ham-item:not(:last-child){border-bottom:1px solid var(--border)}
-  .ham-item:hover,.ham-item:active{background:var(--surface2)}
-  .ham-item .ham-badge{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--danger);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;padding:0 5px}
-  .ham-item .ham-badge.on{display:flex}
-  .admin-bar{background:rgba(203,213,225,.08);border-bottom:1px solid var(--vns1b);padding:6px 20px;font-size:11px;color:var(--vns1);display:none;align-items:center;justify-content:space-between}
-  .admin-bar.on{display:flex}
-  .notif-banner{display:none;padding:10px 20px;background:rgba(245,158,11,.12);border-bottom:1px solid rgba(245,158,11,.35);animation:slide .3s ease}
-  .notif-banner.on{display:block}
-  @keyframes slide{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-  .notif-item{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--warn);padding:4px 0}
-  .notif-item+.notif-item{border-top:1px solid rgba(245,158,11,.2)}
-  .notif-close{background:transparent;border:none;color:var(--warn);cursor:pointer;font-size:16px;padding:0 6px}
-  .date-nav{display:flex;align-items:center;gap:8px;padding:12px 20px 0}
-  .dnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .date-display{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;text-align:center;cursor:pointer}
-  .dd-day{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-  .dd-date{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--vns1)}
-  .date-display.future .dd-date{color:var(--blue)}
-  .date-display.past .dd-date{color:var(--muted)}
-  .today-badge{display:none;font-size:9px;background:rgba(203,213,225,.1);color:var(--vns1);border:1px solid var(--vns1b);padding:2px 7px;border-radius:20px;margin-top:3px}
-  .date-display.today .today-badge{display:inline-block}
-  .sync-row{display:flex;align-items:center;padding:8px 20px 0;font-size:10px;color:var(--muted)}
-  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:4px}
-  .sync-dot.live{background:#22c55e}
-  .legend{display:flex;gap:14px;padding:10px 20px 0;align-items:center}
-  .li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700}
-  .ld{width:9px;height:9px;border-radius:3px}
-  .ld1{background:var(--vns1)}.ld2{background:var(--vns2)}
-  .li.l1{color:var(--vns1)}.li.l2{color:var(--vns2)}
-  .stats{display:flex;gap:8px;padding:10px 20px 0}
-  .stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center}
-  .sn{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;line-height:1}
-  .sl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase}
-  .st .sn{color:var(--blue)}.sv1 .sn{color:var(--vns1)}.sv2 .sn{color:var(--vns2)}
-  .add-btns{display:none;gap:10px;margin:14px 20px 0}
-  .add-btns.on{display:flex}
-  .add-btn{flex:1;border:none;border-radius:var(--r);padding:13px 10px;font-size:14px;font-weight:700;font-family:'Sora',sans-serif;cursor:pointer}
-  .add-btn.v1{background:linear-gradient(135deg,var(--vns1),#94a3b8);color:#0a0f1e}
-  .add-btn.v2{background:linear-gradient(135deg,var(--vns2),#38bdf8);color:#0a0f1e}
-  .tw{padding:14px 20px 0}
-  .sh{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
-  .sh+.sh{margin-top:24px}
-  .sl-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 12px;border-radius:20px}
-  .sl1{color:var(--vns1);background:rgba(203,213,225,.1);border:1px solid var(--vns1b)}
-  .sl2{color:var(--vns2);background:rgba(125,211,252,.1);border:1px solid var(--vns2b)}
-  .sbar{height:2px;flex:1;border-radius:2px}
-  .sb1{background:linear-gradient(90deg,var(--vns1),transparent)}
-  .sb2{background:linear-gradient(90deg,var(--vns2),transparent)}
-  .card{border-radius:var(--r);margin-bottom:10px;overflow:hidden;background:var(--surface);position:relative}
-  .card.c1{border:1px solid var(--vns1b);border-left:4px solid var(--vns1)}
-  .card.c2{border:1px solid var(--vns2b);border-left:4px solid var(--vns2)}
-  .card.cendo{border:1px dashed var(--blue)!important;border-left:4px solid var(--blue)!important}
-  .card.spro{border-left-color:var(--blue)!important}
-  .card.sfin{opacity:.5}
-  .card.ssus{opacity:.4;border-left-color:var(--orange)!important}
-  .card.sext{opacity:.4;border-left-color:var(--red)!important}
-  .ch{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid var(--border)}
-  .tb{border-radius:8px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:17px;font-weight:700;letter-spacing:.5px;color:#0a0f1e}
-  .c1 .tb{background:var(--vns1);border:1px solid var(--vns1);box-shadow:0 2px 8px rgba(203,213,225,.35);color:#0a0f1e}
-  .c2 .tb{background:var(--vns2);border:1px solid var(--vns2);box-shadow:0 2px 8px rgba(125,211,252,.35);color:#0a0f1e}
-  .cendo .tb{background:var(--blue);border:1px solid var(--blue);color:#fff}
-  .tb.nohr{font-size:12px;font-style:italic;opacity:.85}
-  .endo-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.4);color:var(--blue);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;margin-left:6px;text-transform:uppercase;letter-spacing:.5px}
-  .sbg{display:flex;gap:3px}
-  .sbtn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .sbtn.acon{background:rgba(203,213,225,.15);border-color:var(--vns1)}
-  .sbtn.apro{background:rgba(14,165,233,.15);border-color:var(--blue)}
-  .sbtn.afin{background:rgba(100,116,139,.15)}
-  .sbtn.asus{background:rgba(251,146,60,.15);border-color:var(--orange)}
-  .sbtn.aext{background:rgba(220,38,38,.15);border-color:var(--red)}
-  .cb{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .ir{display:flex;flex-direction:column}
-  .il{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:2px}
-  .iv{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ir.snr{grid-column:1/-1}
-  .ir.snr .iv{font-size:14px;white-space:normal}
-  .pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:6px}
-  .pp{background:rgba(245,158,11,.12);color:var(--warn)}
-  .pc1{background:rgba(203,213,225,.1);color:var(--vns1)}
-  .pc2{background:rgba(125,211,252,.1);color:var(--vns2)}
-  .ppr{background:rgba(14,165,233,.12);color:var(--blue);position:relative;overflow:hidden}
-  .ppr::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(14,165,233,.5),transparent);animation:loadBar 1.6s linear infinite}
-  @keyframes loadBar{0%{left:-100%}100%{left:100%}}
-  .pfi{background:rgba(100,116,139,.12);color:var(--muted)}
-  .psu{background:rgba(251,146,60,.12);color:var(--orange)}
-  .pex{background:rgba(220,38,38,.12);color:var(--red)}
-  .wbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:9px;color:#25d366;font-size:12px;font-weight:700;text-decoration:none}
-  .edit-row{grid-column:1/-1;display:none;gap:8px;margin-top:4px}
-  .edit-row.on{display:flex}
-  .ecb{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;border:none}
-  .ecb.eb{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--warn)}
-  .ecb.db{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--danger)}
-  .empty{text-align:center;padding:50px 20px;color:var(--muted)}
-  .ei{font-size:44px;margin-bottom:10px}
-  .loading{text-align:center;padding:60px 20px;color:var(--muted)}
-  .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--vns1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:flex-end;justify-content:center}
-  .ov.open{display:flex}
-  .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:600px;border-top:1px solid var(--border);max-height:90vh;overflow-y:auto}
-  .mh{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
-  .modal h2{font-size:18px;font-weight:700;color:#fff;margin-bottom:14px}
-  .ff{margin-bottom:13px}
-  .ff label{display:block;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-  .ff input,.ff select,.ff textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;font-family:'Sora',sans-serif;outline:none}
-  .ff textarea{font-family:'DM Mono',monospace;font-size:12px;min-height:200px;resize:vertical}
-  .mbtns{display:flex;gap:10px;margin-top:20px}
-  .bcn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:14px;font-size:15px;cursor:pointer;font-weight:600;font-family:'Sora',sans-serif}
-  .bsv{flex:2;border:none;border-radius:12px;padding:14px;font-size:15px;cursor:pointer;font-weight:700;font-family:'Sora',sans-serif}
-  .bsv.v1{background:linear-gradient(135deg,var(--vns1),#94a3b8);color:#0a0f1e}
-  .bsv.v2{background:linear-gradient(135deg,var(--vns2),#38bdf8);color:#0a0f1e}
-  .bsv.ed{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0a0f1e}
-  .anest-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
-  .anest-name{font-size:14px;font-weight:700;color:var(--text)}
-  .anest-phone{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
-  .anest-del{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--danger);width:30px;height:30px;border-radius:8px;cursor:pointer}
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s;white-space:nowrap}
-  .toast.show{transform:translateX(-50%) translateY(0)}
-  .imp-info{background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);border-radius:10px;padding:12px;font-size:12px;color:var(--blue);margin-bottom:12px;line-height:1.5}
-  .notif-list{max-height:300px;overflow-y:auto}
-  .notif-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-  .notif-row.fin{border-color:rgba(100,116,139,.4)}
-  .notif-row.sus{border-color:rgba(251,146,60,.4);background:rgba(251,146,60,.05)}
-  .notif-row.ext{border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.05)}
-  .notif-ttl{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
-  .notif-sub{font-size:11px;color:var(--muted)}
-  .saida-list{max-height:60vh;overflow-y:auto;margin-bottom:10px}
-  .saida-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-  .saida-row.liberado{opacity:.4}
-  .saida-row.liberado .saida-name{text-decoration:line-through}
-  .saida-info{flex:1;min-width:0}
-  .saida-name{font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis}
-  .saida-hr{font-size:11px;color:var(--orange);font-family:'DM Mono',monospace;margin-top:2px}
-  .saida-actions{display:flex;gap:6px;flex-shrink:0}
-  .saida-btn{border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif}
-  .saida-btn.lib{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3)}
-  .saida-btn.unlib{background:rgba(14,165,233,.15);color:var(--blue);border:1px solid rgba(14,165,233,.3)}
-  .saida-btn.rem{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.25);width:30px;height:30px;padding:0;font-size:14px}
-</style>
-</head>
-<body>
-<header>
-  <div class="ht">
-    <div class="logo"><div class="logo-icon">🏥</div><div><h1>MovveMed</h1><p>Centro Cirúrgico</p></div></div>
-    <div class="hdr-btns" id="hdrBtns">
-      <button class="hdr-btn locked" id="btnLogin" onclick="openLogin()">🔐 Admin</button>
-    </div>
-  </div>
-</header>
-<div class="admin-bar" id="adminBar"><span>✅ Modo administrador ativo</span><button class="hdr-btn" onclick="logout()">Sair</button></div>
-<div class="notif-banner" id="notifBanner"></div>
-<div class="date-nav">
-  <button class="dnav-btn" onclick="changeDay(-1)">‹</button>
-  <div class="date-display" id="dateDisplay" onclick="openDatePicker()">
-    <div class="dd-day" id="ddDay"></div>
-    <div class="dd-date" id="ddDate"></div>
-    <div class="today-badge">Hoje</div>
-  </div>
-  <button class="dnav-btn" onclick="changeDay(1)">›</button>
-</div>
-<div class="sync-row"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Conectando...</span></div>
-<div class="legend"><div class="li l1"><span class="ld ld1"></span> VNS 1</div><div class="li l2"><span class="ld ld2"></span> VNS 2</div></div>
-<div class="stats">
-  <div class="stat st"><div class="sn" id="sT">0</div><div class="sl">Total</div></div>
-  <div class="stat sv1"><div class="sn" id="sV1">0</div><div class="sl">VNS 1</div></div>
-  <div class="stat sv2"><div class="sn" id="sV2">0</div><div class="sl">VNS 2</div></div>
-</div>
-<div class="add-btns" id="addBtns">
-  <button class="add-btn v1" onclick="openModal('vns1',null)">＋ VNS 1</button>
-  <button class="add-btn v2" onclick="openModal('vns2',null)">＋ VNS 2</button>
-</div>
-<div class="tw" id="mainList"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
-
-<div class="ov" id="lOv"><div class="modal">
-  <div class="mh"></div><h2>🔐 Acesso Administrador</h2>
-  <div class="ff"><label>Senha</label><input type="password" id="lPwd" placeholder="Digite a senha"/></div>
-  <div class="mbtns"><button class="bcn" onclick="closeLogin()">Cancelar</button><button class="bsv v1" onclick="doLogin()">Entrar ✓</button></div>
-</div></div>
-
-<div class="ov" id="dpOv"><div class="modal">
-  <div class="mh"></div><h2>📅 Ir para uma data</h2>
-  <input type="date" id="dpInput" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace"/>
-  <div class="mbtns"><button class="bcn" onclick="closeDP()">Cancelar</button><button class="bsv v1" onclick="confirmDate()">Ir ✓</button></div>
-</div></div>
-
-<div class="ov" id="sOv"><div class="modal">
-  <div class="mh"></div><h2 id="mTitle">Nova Cirurgia</h2>
-  <div class="ff"><label>Torre</label><select id="fSala"><option value="vns1">VNS 1</option><option value="vns2">VNS 2</option></select></div>
-  <div class="ff"><label>Horário</label><input type="time" id="fT"/></div>
-  <div class="ff"><label>Nome da Cirurgia</label><input type="text" id="fN" placeholder="Ex: Apendicectomia"/></div>
-  <div class="ff"><label>Cirurgião</label><input type="text" id="fS" placeholder="Dr(a). Nome"/></div>
-  <div class="ff"><label>Leito (opcional)</label><input type="text" id="fL" placeholder="Ex: 302B"/></div>
-  <div class="ff"><label>Anestesista (opcional)</label><select id="fA"><option value="">-- A definir --</option></select></div>
-  <div class="ff" id="fA2Wrap" style="display:none"><label>2º Anestesista (somente endoscopia)</label><select id="fA2"><option value="">-- A definir --</option></select></div>
-  <div class="mbtns"><button class="bcn" onclick="closeMod()">Cancelar</button><button class="bsv v1" id="bSav" onclick="saveSurg()">Salvar ✓</button></div>
-</div></div>
-
-<div class="ov" id="aOv"><div class="modal">
-  <div class="mh"></div><h2>👥 Anestesistas</h2>
-  <div class="ff"><label>Nome</label><input type="text" id="aN" placeholder="Dr(a). Nome"/></div>
-  <div class="ff"><label>WhatsApp</label><input type="tel" id="aP" placeholder="(11) 99999-9999"/></div>
-  <button class="bsv v1" onclick="addAnest()" style="width:100%;margin-bottom:16px">＋ Adicionar</button>
-  <div id="anestList"></div>
-  <div class="mbtns"><button class="bcn" onclick="closeAL()" style="flex:1">Fechar</button></div>
-</div></div>
-
-<div class="ov" id="iOv"><div class="modal">
-  <div class="mh"></div><h2>📋 Importar Lista</h2>
-  <div class="imp-info">Cole o mapa no formato:<br>
-  <b>VNS1</b><br>
-  05:00 - Cirurgia - Cirurgião - Leito<br>
-  06:00 - Outra - Dr(a)<br>
-  <b>VNS2</b><br>
-  07:00 - Cirurgia - Cirurgião - 302B<br><br>
-  <b>Ordem:</b> Horário - Cirurgia - Cirurgião - Leito (opcional).<br>
-  Cirurgias duplicadas (mesma torre, horário e nome) serão ignoradas.</div>
-  <div class="ff"><label>Cole a lista aqui</label><textarea id="iTxt"></textarea></div>
-  <div class="mbtns"><button class="bcn" onclick="closeImp()">Cancelar</button><button class="bsv v1" onclick="doImport()">Importar ✓</button></div>
-</div></div>
-
-<div class="ov" id="nOv"><div class="modal">
-  <div class="mh"></div><h2>🔔 Notificações</h2>
-  <div class="notif-list" id="notifList"></div>
-  <div class="mbtns"><button class="bcn" onclick="clearNotifs()" style="flex:1">Limpar todas</button><button class="bsv v1" onclick="closeNotifs()" style="flex:1">Fechar</button></div>
-</div></div>
-
-<div class="ov" id="saOv"><div class="modal">
-  <div class="mh"></div><h2>📤 Escala de Saída</h2>
-  <div class="imp-info" style="background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:var(--orange)">Adicione os anestesistas na ordem de saída. Toque em <b>"Liberar"</b> quando algum profissional já saiu.</div>
-  <div class="ff"><label>Adicionar anestesista</label><select id="saSel"><option value="">-- Selecione --</option></select></div>
-  <button class="bsv v1" onclick="addSaida()" style="width:100%;margin-bottom:16px">＋ Adicionar à escala</button>
-  <div class="saida-list" id="saidaList"></div>
-  <div class="mbtns"><button class="bcn" onclick="closeSaida()" style="flex:1">Fechar</button></div>
-</div></div>
-
-<div class="toast" id="toast"></div>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDYkrbxndcEgH9uz0dNbkUF8gtNoAMe7OY",
-  authDomain: "escala-vns.firebaseapp.com",
-  projectId: "escala-vns",
-  storageBucket: "escala-vns.firebasestorage.app",
-  messagingSenderId: "913644431265",
-  appId: "1:913644431265:web:8a492e0d9ad3ee190c0de0"
-};
-const ADMIN_PWD = "mmzggs0619";
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const col = collection(db, 'cirurgias');
-const colA = collection(db, 'anestesistas');
-const colS = collection(db, 'saidas');
-const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-let currentDate = new Date(); currentDate.setHours(0,0,0,0);
-let unsub = null, unsubSaida = null, all = [], anests = [], saidaList = [], editId = null, sala = 'vns1';
-let isAdmin = localStorage.getItem('escalavns_admin')==='1';
-let notifs = JSON.parse(localStorage.getItem('escalavns_notifs')||'[]');
-let prevStatus = {};
-let firstLoad = true;
-let importing = false;
-let isEndo = false;
-
-function dateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-
-function fmt(d){
-  const t = new Date(); t.setHours(0,0,0,0);
-  const diff = Math.round((d-t)/86400000);
-  const dd = document.getElementById('dateDisplay');
-  dd.className = 'date-display '+(diff===0?'today':diff>0?'future':'past');
-  document.getElementById('ddDay').textContent = days[d.getDay()];
-  document.getElementById('ddDate').textContent = `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function saveNotifs(){ localStorage.setItem('escalavns_notifs', JSON.stringify(notifs.slice(0,50))); }
-
-function addNotif(surg, newStatus){
-  let lbl;
-  if(newStatus==='finished') lbl='✅ Finalizada';
-  else if(newStatus==='suspended') lbl='❌ Suspensa';
-  else if(newStatus==='external') lbl='⛔️ Externo';
-  else return;
-  const now = new Date();
-  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  notifs.unshift({
-    id: Date.now()+Math.random(),
-    title: `${lbl}: ${surg.name}`,
-    sub: `${surg.sala.toUpperCase()} · ${surg.time||'s/hr'} · ${surg.surgeon||'sem cirurgião'}`,
-    status: newStatus,
-    time: timeStr,
-    read: false
-  });
-  saveNotifs();
-  renderNotifBanner();
-  updateNotifBadge();
-}
-
-function renderNotifBanner(){
-  if(!isAdmin){ document.getElementById('notifBanner').classList.remove('on'); return; }
-  const unread = notifs.filter(n=>!n.read).slice(0,3);
-  const b = document.getElementById('notifBanner');
-  if(!unread.length){ b.classList.remove('on'); return; }
-  b.classList.add('on');
-  b.innerHTML = unread.map(n=>`<div class="notif-item"><span>${n.title} <small style="opacity:.7">· ${n.time}</small></span><button class="notif-close" onclick="window.markRead('${n.id}')">✕</button></div>`).join('');
-}
-
-function updateNotifBadge(){
-  const badge = document.getElementById('hamBadge');
-  if(!badge) return;
-  const unread = notifs.filter(n=>!n.read).length;
-  if(unread>0){ badge.classList.add('on'); badge.textContent = unread>9?'9+':unread; }
-  else badge.classList.remove('on');
-  const itemBadge = document.getElementById('hamItemBadge');
-  if(itemBadge){
-    if(unread>0){ itemBadge.classList.add('on'); itemBadge.textContent = unread>9?'9+':unread; }
-    else itemBadge.classList.remove('on');
-  }
-}
-
-function updateAdminUI(){
-  const bar = document.getElementById('adminBar');
-  const addB = document.getElementById('addBtns');
-  const hb = document.getElementById('hdrBtns');
-  if(isAdmin){
-    bar.classList.add('on');
-    addB.classList.add('on');
-    hb.innerHTML = `
-      <div style="position:relative">
-        <button class="ham-btn" onclick="window.toggleHam(event)">
-          <span></span><span></span><span></span>
-          <span class="badge-count" id="hamBadge"></span>
-        </button>
-        <div class="ham-menu" id="hamMenu">
-          <button class="ham-item" onclick="window.hamGo('notifs')">🔔 Notificações<span class="ham-badge" id="hamItemBadge"></span></button>
-          <button class="ham-item" onclick="window.hamGo('import')">📋 Importar</button>
-          <button class="ham-item" onclick="window.hamGo('anest')">👥 Anestesistas</button>
-          <button class="ham-item" onclick="window.hamGo('saida')">📤 Escala de Saída</button>
-        </div>
-      </div>`;
-    updateNotifBadge();
-  } else {
-    bar.classList.remove('on');
-    addB.classList.remove('on');
-    hb.innerHTML = '<button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>';
-    document.getElementById('notifBanner').classList.remove('on');
-  }
-  renderNotifBanner();
-  render();
-}
-
-window.toggleHam = (e)=>{
-  e.stopPropagation();
-  const m = document.getElementById('hamMenu');
-  if(m) m.classList.toggle('on');
-};
-
-window.hamGo = (w)=>{
-  document.getElementById('hamMenu').classList.remove('on');
-  if(w==='notifs') window.openNotifs();
-  else if(w==='import') window.openImport();
-  else if(w==='anest') window.openAnestList();
-  else if(w==='saida') window.openSaida();
-};
-
-document.addEventListener('click',(e)=>{
-  const m = document.getElementById('hamMenu');
-  if(m && m.classList.contains('on') && !e.target.closest('.ham-btn') && !e.target.closest('.ham-menu')){
-    m.classList.remove('on');
-  }
-});
-
-function loadDate(d){
-  if(unsub) unsub();
-  if(unsubSaida) unsubSaida();
-  currentDate = new Date(d); currentDate.setHours(0,0,0,0);
-  fmt(currentDate);
-  document.getElementById('mainList').innerHTML = `<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>`;
-  document.getElementById('syncDot').className='sync-dot';
-  document.getElementById('syncTxt').textContent='Conectando...';
-  firstLoad = true;
-  prevStatus = {};
-  const q = query(col, where('date','==',dateKey(currentDate)));
-  unsub = onSnapshot(q,(s)=>{
-    const newAll = s.docs.map(d=>({id:d.id,...d.data()}));
-    if(!firstLoad && isAdmin){
-      for(const surg of newAll){
-        const prev = prevStatus[surg.id];
-        if(prev!==undefined && prev!==surg.status){
-          if(surg.status==='finished' || surg.status==='suspended' || surg.status==='external'){
-            addNotif(surg, surg.status);
-          }
-        }
-      }
-    }
-    prevStatus = {};
-    newAll.forEach(x=>{ prevStatus[x.id] = x.status; });
-    firstLoad = false;
-    all = newAll;
-    document.getElementById('syncDot').className='sync-dot live';
-    document.getElementById('syncTxt').textContent='Ao vivo';
-    render();
-  },(e)=>{document.getElementById('syncTxt').textContent='Erro: '+e.message;});
-  loadSaida();
-}
-
-function loadSaida(){
-  const dateStr = dateKey(currentDate);
-  const dref = doc(db,'saidas',dateStr);
-  unsubSaida = onSnapshot(dref,(snap)=>{
-    if(snap.exists()){
-      saidaList = snap.data().list || [];
-    } else {
-      saidaList = [];
-    }
-    renderSaidaList();
-  });
-}
-
-onSnapshot(colA,(s)=>{
-  anests = s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
-  updateSelect();
-  renderAnestList();
-  updateSaidaSelect();
-});
-
-function updateSelect(){
-  const sel = document.getElementById('fA');
-  const sel2 = document.getElementById('fA2');
-  const cur = sel.value;
-  const cur2 = sel2.value;
-  const opts = '<option value="">-- A definir --</option>' + anests.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-  sel.innerHTML = opts;
-  sel2.innerHTML = opts;
-  sel.value = cur;
-  sel2.value = cur2;
-}
-
-function updateSaidaSelect(){
-  const sel = document.getElementById('saSel');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">-- Selecione --</option>' + anests.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
-}
-
-function render(){
-  const C = document.getElementById('mainList');
-  const realCards = all.slice();
-  const endoV1 = realCards.find(x=>x.sala==='vns1' && x.isEndo);
-  const endoV2 = realCards.find(x=>x.sala==='vns2' && x.isEndo);
-  const dow = currentDate.getDay();
-  const showEndo = dow !== 0;
-  let list = realCards.slice();
-  if(showEndo){
-    if(!endoV1){
-      list.push({id:'__ghost_endo_vns1',sala:'vns1',time:'',name:'Endoscopia',surgeon:'',leito:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true,date:dateKey(currentDate)});
-    }
-    if(!endoV2){
-      list.push({id:'__ghost_endo_vns2',sala:'vns2',time:'',name:'Endoscopia',surgeon:'',leito:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true,date:dateKey(currentDate)});
-    }
-  }
-  const v1 = list.filter(s=>s.sala==='vns1').sort((a,b)=>{
-    if(a.isEndo && !b.isEndo) return -1;
-    if(!a.isEndo && b.isEndo) return 1;
-    return (a.time||'').localeCompare(b.time||'');
-  });
-  const v2 = list.filter(s=>s.sala==='vns2').sort((a,b)=>{
-    if(a.isEndo && !b.isEndo) return -1;
-    if(!a.isEndo && b.isEndo) return 1;
-    return (a.time||'').localeCompare(b.time||'');
-  });
-  const realV1 = realCards.filter(s=>s.sala==='vns1').length;
-  const realV2 = realCards.filter(s=>s.sala==='vns2').length;
-  document.getElementById('sT').textContent = realV1+realV2;
-  document.getElementById('sV1').textContent = realV1;
-  document.getElementById('sV2').textContent = realV2;
-  if(!v1.length && !v2.length){ C.innerHTML=`<div class="empty"><div class="ei">🩺</div><p>Nenhuma cirurgia.</p></div>`; return; }
-  let h = '';
-  if(v1.length){ h += `<div class="sh"><span class="sl-lbl sl1">● VNS 1</span><div class="sbar sb1"></div></div>`; h += v1.map(card).join(''); }
-  if(v2.length){ h += `<div class="sh"><span class="sl-lbl sl2">● VNS 2</span><div class="sbar sb2"></div></div>`; h += v2.map(card).join(''); }
-  C.innerHTML = h;
-}
-
-function card(s){
-  const v1 = s.sala==='vns1';
-  const endoCls = s.isEndo ? ' cendo' : '';
-  let sc='',pl='',c1='',c2='',c3='',c4='',c5='';
-  if(s.status==='confirmed'){sc='scon';pl=`<span class="pill ${v1?'pc1':'pc2'}">👍🏼 Avaliado</span>`;c1='acon';}
-  else if(s.status==='in-progress'){sc='spro';pl=`<span class="pill ppr">🔵 Em andamento</span>`;c2='apro';}
-  else if(s.status==='finished'){sc='sfin';pl=`<span class="pill pfi">✅ Finalizada</span>`;c3='afin';}
-  else if(s.status==='suspended'){sc='ssus';pl=`<span class="pill psu">❌ Suspensa</span>`;c4='asus';}
-  else if(s.status==='external'){sc='sext';pl=`<span class="pill pex">⛔️ Externo</span>`;c5='aext';}
-  else pl=`<span class="pill pp">⏳ Aguardando</span>`;
-  const wa = (s.phone && isAdmin && !s.isGhost) ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank">📲 Avisar Anestesista</a></div>` : '';
-  const sur = s.surgeon || 'A definir';
-  let ane = s.anest || 'A definir';
-  if(s.isEndo && s.anest2) ane = `${s.anest||'A definir'} / ${s.anest2}`;
-  const hrTxt = s.time ? s.time : (s.isEndo ? 'Sem horário' : '--:--');
-  const hrCls = s.time ? '' : ' nohr';
-  const endoTag = s.isEndo ? `<span class="endo-tag">🔵 Fixa</span>` : '';
-  const editBtns = isAdmin ? `<div class="edit-row on">
-      <button class="ecb eb" onclick="window.openModal('${s.sala}','${s.id}')">✏️ Editar</button>
-      ${s.isGhost ? '' : `<button class="ecb db" onclick="window.confDel('${s.id}','${s.name}')">🗑️ Excluir</button>`}
-    </div>` : '';
-  const statusBtns = `<div class="sbg">
-    <button class="sbtn ${c1}" onclick="window.setSt('${s.id}','confirmed')">👍</button>
-    <button class="sbtn ${c2}" onclick="window.setSt('${s.id}','in-progress')">🔵</button>
-    <button class="sbtn ${c3}" onclick="window.setSt('${s.id}','finished')">✅</button>
-    <button class="sbtn ${c4}" onclick="window.setSt('${s.id}','suspended')">❌</button>
-    <button class="sbtn ${c5}" onclick="window.setSt('${s.id}','external')">⛔️</button>
-  </div>`;
-  return `<div class="card ${v1?'c1':'c2'}${endoCls} ${sc}"><div class="ch"><span class="tb${hrCls}">${hrTxt}</span>${statusBtns}</div><div class="cb">
-    <div class="ir snr"><span class="il">Cirurgia</span><span class="iv">${s.name}${endoTag}</span>${pl}</div>
-    <div class="ir"><span class="il">Cirurgião</span><span class="iv">${sur}</span></div>
-    <div class="ir"><span class="il">Leito</span><span class="iv">${s.leito||'—'}</span></div>
-    <div class="ir snr"><span class="il">Anestesista${s.isEndo?'s':''}</span><span class="iv">${ane}</span></div>
-    ${wa}
-    ${editBtns}
-  </div></div>`;
-}
-
-function waLink(s){
-  const t = new Date(); t.setHours(0,0,0,0);
-  const diff = Math.round((currentDate-t)/86400000);
-  const lbl = diff===0?'hoje':diff===1?'amanhã':`${String(currentDate.getDate()).padStart(2,'0')}/${currentDate.getMonth()+1}`;
-  const leitoTxt = s.leito ? ` Leito: *${s.leito}*.` : '';
-  const hrTxt = s.time || 'horário a definir';
-  const m = `Olá Dr(a). ${s.anest}! Você foi escalado(a) para *${s.name}* às *${hrTxt}* ${lbl} na *${s.sala.toUpperCase()}*. Cirurgião: ${s.surgeon||'a definir'}.${leitoTxt} ✅`;
-  const p = s.phone.startsWith('55')?s.phone:'55'+s.phone;
-  return `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
-}
-</script>
 <script type="module">
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -822,6 +261,564 @@ function renderSaidaList(){
       </div>
     </div>
   `).join('');
+}
+
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
+document.getElementById('sOv').addEventListener('click',e=>{ if(e.target.id==='sOv') window.closeMod(); });
+document.getElementById('dpOv').addEventListener('click',e=>{ if(e.target.id==='dpOv') window.closeDP(); });
+document.getElementById('aOv').addEventListener('click',e=>{ if(e.target.id==='aOv') window.closeAL(); });
+document.getElementById('iOv').addEventListener('click',e=>{ if(e.target.id==='iOv') window.closeImp(); });
+document.getElementById('lOv').addEventListener('click',e=>{ if(e.target.id==='lOv') window.closeLogin(); });
+document.getElementById('nOv').addEventListener('click',e=>{ if(e.target.id==='nOv') window.closeNotifs(); });
+document.getElementById('saOv').addEventListener('click',e=>{ if(e.target.id==='saOv') window.closeSaida(); });
+
+updateAdminUI();
+loadDate(new Date());
+</script>
+</body>
+</html>
+<header>
+  <div class="ht">
+    <div class="logo"><div class="logo-icon">🏥</div><div><h1>MovveMed</h1><p>Centro Cirúrgico</p></div></div>
+    <div class="hdr-btns" id="hdrBtns">
+      <button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>
+    </div>
+  </div>
+</header>
+<div class="admin-bar" id="adminBar"><span>✅ Modo administrador ativo</span><button class="hdr-btn" onclick="logout()">Sair</button></div>
+<div class="notif-banner" id="notifBanner"></div>
+<div class="date-nav">
+  <button class="dnav-btn" onclick="changeDay(-1)">‹</button>
+  <div class="date-display" id="dateDisplay" onclick="openDatePicker()">
+    <div class="dd-day" id="ddDay"></div>
+    <div class="dd-date" id="ddDate"></div>
+    <div class="today-badge">Hoje</div>
+  </div>
+  <button class="dnav-btn" onclick="changeDay(1)">›</button>
+</div>
+<div class="sync-row"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Conectando...</span></div>
+<div class="legend"><div class="li l1"><span class="ld ld1"></span> VNS 1</div><div class="li l2"><span class="ld ld2"></span> VNS 2</div></div>
+<div class="stats">
+  <div class="stat st"><div class="sn" id="sT">0</div><div class="sl">Total</div></div>
+  <div class="stat sv1"><div class="sn" id="sV1">0</div><div class="sl">VNS 1</div></div>
+  <div class="stat sv2"><div class="sn" id="sV2">0</div><div class="sl">VNS 2</div></div>
+</div>
+<div class="add-btns" id="addBtns">
+  <button class="add-btn v1" onclick="openModal('vns1',null)">＋ VNS 1</button>
+  <button class="add-btn v2" onclick="openModal('vns2',null)">＋ VNS 2</button>
+</div>
+<div class="tw" id="mainList"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+
+<div class="ov" id="lOv"><div class="modal">
+  <div class="mh"></div><h2>🔐 Acesso Administrador</h2>
+  <div class="ff"><label>Senha</label><input type="password" id="lPwd" placeholder="Digite a senha"/></div>
+  <div class="mbtns"><button class="bcn" onclick="closeLogin()">Cancelar</button><button class="bsv v1" onclick="doLogin()">Entrar ✓</button></div>
+</div></div>
+
+<div class="ov" id="dpOv"><div class="modal">
+  <div class="mh"></div><h2>📅 Ir para uma data</h2>
+  <input type="date" id="dpInput" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:16px;font-family:'DM Mono',monospace"/>
+  <div class="mbtns"><button class="bcn" onclick="closeDP()">Cancelar</button><button class="bsv v1" onclick="confirmDate()">Ir ✓</button></div>
+</div></div>
+
+<div class="ov" id="sOv"><div class="modal">
+  <div class="mh"></div><h2 id="mTitle">Nova Cirurgia</h2>
+  <div class="ff"><label>Torre</label><select id="fSala"><option value="vns1">VNS 1</option><option value="vns2">VNS 2</option></select></div>
+  <div class="ff"><label>Horário</label><input type="time" id="fT"/></div>
+  <div class="ff"><label>Nome da Cirurgia</label><input type="text" id="fN" placeholder="Ex: Apendicectomia"/></div>
+  <div class="ff"><label>Cirurgião</label><input type="text" id="fS" placeholder="Dr(a). Nome"/></div>
+  <div class="ff"><label>Leito (opcional)</label><input type="text" id="fL" placeholder="Ex: 302B"/></div>
+  <div class="ff"><label>Anestesista (opcional)</label><select id="fA"><option value="">-- A definir --</option></select></div>
+  <div class="ff" id="fA2Wrap" style="display:none"><label>2º Anestesista (endoscopia)</label><select id="fA2"><option value="">-- A definir --</option></select></div>
+  <div class="mbtns"><button class="bcn" onclick="closeMod()">Cancelar</button><button class="bsv v1" id="bSav" onclick="saveSurg()">Salvar ✓</button></div>
+</div></div>
+
+<div class="ov" id="aOv"><div class="modal">
+  <div class="mh"></div><h2>👥 Anestesistas</h2>
+  <div class="ff"><label>Nome</label><input type="text" id="aN" placeholder="Dr(a). Nome"/></div>
+  <div class="ff"><label>WhatsApp</label><input type="tel" id="aP" placeholder="(11) 99999-9999"/></div>
+  <button class="bsv v1" onclick="addAnest()" style="width:100%;margin-bottom:16px">＋ Adicionar</button>
+  <div id="anestList"></div>
+  <div class="mbtns"><button class="bcn" onclick="closeAL()" style="flex:1">Fechar</button></div>
+</div></div>
+
+<div class="ov" id="iOv"><div class="modal">
+  <div class="mh"></div><h2>📋 Importar Lista</h2>
+  <div class="imp-info">Cole o mapa no formato:<br>
+  <b>VNS1</b><br>
+  05:00 - Cirurgia - Cirurgião - Leito<br>
+  06:00 - Outra - Dr(a)<br>
+  <b>VNS2</b><br>
+  07:00 - Cirurgia - Cirurgião - 302B</div>
+  <div class="ff"><label>Cole a lista aqui</label><textarea id="iTxt"></textarea></div>
+  <div class="mbtns"><button class="bcn" onclick="closeImp()">Cancelar</button><button class="bsv v1" onclick="doImport()">Importar ✓</button></div>
+</div></div>
+
+<div class="ov" id="nOv"><div class="modal">
+  <div class="mh"></div><h2>🔔 Notificações</h2>
+  <div class="notif-list" id="notifList"></div>
+  <div class="mbtns"><button class="bcn" onclick="clearNotifs()" style="flex:1">Limpar</button><button class="bsv v1" onclick="closeNotifs()" style="flex:1">Fechar</button></div>
+</div></div>
+
+<div class="ov" id="saOv"><div class="modal">
+  <div class="mh"></div><h2>📤 Escala de Saída</h2>
+  <div class="imp-info" style="background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:var(--orange)">Adicione os anestesistas na ordem de saída. Toque em <b>Liberar</b> quando algum profissional já saiu.</div>
+  <div class="ff"><label>Adicionar anestesista</label><select id="saSel"><option value="">-- Selecione --</option></select></div>
+  <button class="bsv v1" onclick="addSaida()" style="width:100%;margin-bottom:16px">＋ Adicionar</button>
+  <div class="saida-list" id="saidaList"></div>
+  <div class="mbtns"><button class="bcn" onclick="closeSaida()" style="flex:1">Fechar</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDYkrbxndcEgH9uz0dNbkUF8gtNoAMe7OY",
+  authDomain: "escala-vns.firebaseapp.com",
+  projectId: "escala-vns",
+  storageBucket: "escala-vns.firebasestorage.app",
+  messagingSenderId: "913644431265",
+  appId: "1:913644431265:web:8a492e0d9ad3ee190c0de0"
+};
+const ADMIN_PWD = "mmzggs0619";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const col = collection(db, 'cirurgias');
+const colA = collection(db, 'anestesistas');
+const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+let currentDate = new Date(); currentDate.setHours(0,0,0,0);
+let unsub = null, unsubSaida = null, all = [], anests = [], saidaList = [], editId = null, sala = 'vns1';
+let isAdmin = localStorage.getItem('escalavns_admin')==='1';
+let notifs = JSON.parse(localStorage.getItem('escalavns_notifs')||'[]');
+let prevStatus = {};
+let firstLoad = true;
+let importing = false;
+let isEndo = false;
+
+function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function fmt(d){
+  const t = new Date(); t.setHours(0,0,0,0);
+  const diff = Math.round((d-t)/86400000);
+  const dd = document.getElementById('dateDisplay');
+  dd.className = 'date-display '+(diff===0?'today':diff>0?'future':'past');
+  document.getElementById('ddDay').textContent = days[d.getDay()];
+  document.getElementById('ddDate').textContent = String(d.getDate()).padStart(2,'0')+' '+months[d.getMonth()]+' '+d.getFullYear();
+}
+
+function saveNotifs(){ localStorage.setItem('escalavns_notifs', JSON.stringify(notifs.slice(0,50))); }
+
+function addNotif(surg, newStatus){
+  let lbl;
+  if(newStatus==='finished') lbl='✅ Finalizada';
+  else if(newStatus==='suspended') lbl='❌ Suspensa';
+  else if(newStatus==='external') lbl='⛔️ Externo';
+  else return;
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  notifs.unshift({id:Date.now()+Math.random(),title:lbl+': '+surg.name,sub:surg.sala.toUpperCase()+' · '+(surg.time||'s/hr')+' · '+(surg.surgeon||'sem cirurgião'),status:newStatus,time:timeStr,read:false});
+  saveNotifs();
+  renderNotifBanner();
+  updateNotifBadge();
+}
+
+function renderNotifBanner(){
+  if(!isAdmin){ document.getElementById('notifBanner').classList.remove('on'); return; }
+  const unread = notifs.filter(n=>!n.read).slice(0,3);
+  const b = document.getElementById('notifBanner');
+  if(!unread.length){ b.classList.remove('on'); return; }
+  b.classList.add('on');
+  b.innerHTML = unread.map(n=>'<div class="notif-item"><span>'+n.title+'</span><button class="notif-close" onclick="window.markRead(\''+n.id+'\')">✕</button></div>').join('');
+}
+
+function updateNotifBadge(){
+  const badge = document.getElementById('hamBadge');
+  const itemBadge = document.getElementById('hamItemBadge');
+  const unread = notifs.filter(n=>!n.read).length;
+  if(badge){ if(unread>0){ badge.classList.add('on'); badge.textContent = unread>9?'9+':unread; } else badge.classList.remove('on'); }
+  if(itemBadge){ if(unread>0){ itemBadge.classList.add('on'); itemBadge.textContent = unread>9?'9+':unread; } else itemBadge.classList.remove('on'); }
+}
+
+function updateAdminUI(){
+  const bar = document.getElementById('adminBar');
+  const addB = document.getElementById('addBtns');
+  const hb = document.getElementById('hdrBtns');
+  if(isAdmin){
+    bar.classList.add('on');
+    addB.classList.add('on');
+    hb.innerHTML = '<div style="position:relative"><button class="ham-btn" onclick="window.toggleHam(event)"><span></span><span></span><span></span><span class="badge-count" id="hamBadge"></span></button><div class="ham-menu" id="hamMenu"><button class="ham-item" onclick="window.hamGo(\'notifs\')">🔔 Notificações<span class="ham-badge" id="hamItemBadge"></span></button><button class="ham-item" onclick="window.hamGo(\'import\')">📋 Importar</button><button class="ham-item" onclick="window.hamGo(\'anest\')">👥 Anestesistas</button><button class="ham-item" onclick="window.hamGo(\'saida\')">📤 Escala de Saída</button></div></div>';
+    updateNotifBadge();
+  } else {
+    bar.classList.remove('on');
+    addB.classList.remove('on');
+    hb.innerHTML = '<button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>';
+    document.getElementById('notifBanner').classList.remove('on');
+  }
+  renderNotifBanner();
+  render();
+}
+
+window.toggleHam = (e)=>{ e.stopPropagation(); const m = document.getElementById('hamMenu'); if(m) m.classList.toggle('on'); };
+
+window.hamGo = (w)=>{
+  const m = document.getElementById('hamMenu');
+  if(m) m.classList.remove('on');
+  if(w==='notifs') window.openNotifs();
+  else if(w==='import') window.openImport();
+  else if(w==='anest') window.openAnestList();
+  else if(w==='saida') window.openSaida();
+};
+
+document.addEventListener('click',(e)=>{
+  const m = document.getElementById('hamMenu');
+  if(m && m.classList.contains('on') && !e.target.closest('.ham-btn') && !e.target.closest('.ham-menu')){ m.classList.remove('on'); }
+});
+
+function loadDate(d){
+  if(unsub) unsub();
+  if(unsubSaida) unsubSaida();
+  currentDate = new Date(d); currentDate.setHours(0,0,0,0);
+  fmt(currentDate);
+  document.getElementById('mainList').innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';
+  document.getElementById('syncDot').className='sync-dot';
+  document.getElementById('syncTxt').textContent='Conectando...';
+  firstLoad = true;
+  prevStatus = {};
+  const q = query(col, where('date','==',dateKey(currentDate)));
+  unsub = onSnapshot(q,(s)=>{
+    const newAll = s.docs.map(d=>({id:d.id,...d.data()}));
+    if(!firstLoad && isAdmin){
+      for(const surg of newAll){
+        const prev = prevStatus[surg.id];
+        if(prev!==undefined && prev!==surg.status){
+          if(surg.status==='finished' || surg.status==='suspended' || surg.status==='external'){ addNotif(surg, surg.status); }
+        }
+      }
+    }
+    prevStatus = {};
+    newAll.forEach(x=>{ prevStatus[x.id] = x.status; });
+    firstLoad = false;
+    all = newAll;
+    document.getElementById('syncDot').className='sync-dot live';
+    document.getElementById('syncTxt').textContent='Ao vivo';
+    render();
+  },(e)=>{document.getElementById('syncTxt').textContent='Erro: '+e.message;});
+  loadSaida();
+}
+
+function loadSaida(){
+  const dateStr = dateKey(currentDate);
+  const dref = doc(db,'saidas',dateStr);
+  unsubSaida = onSnapshot(dref,(snap)=>{
+    if(snap.exists()){ saidaList = snap.data().list || []; } else { saidaList = []; }
+    renderSaidaList();
+  });
+}
+
+onSnapshot(colA,(s)=>{
+  anests = s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
+  updateSelect();
+  renderAnestList();
+  updateSaidaSelect();
+});
+
+function updateSelect(){
+  const sel = document.getElementById('fA');
+  const sel2 = document.getElementById('fA2');
+  if(!sel || !sel2) return;
+  const cur = sel.value;
+  const cur2 = sel2.value;
+  const opts = '<option value="">-- A definir --</option>' + anests.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join('');
+  sel.innerHTML = opts;
+  sel2.innerHTML = opts;
+  sel.value = cur;
+  sel2.value = cur2;
+}
+
+function updateSaidaSelect(){
+  const sel = document.getElementById('saSel');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Selecione --</option>' + anests.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join('');
+}
+
+function render(){
+  const C = document.getElementById('mainList');
+  const realCards = all.slice();
+  const endoV1 = realCards.find(x=>x.sala==='vns1' && x.isEndo);
+  const endoV2 = realCards.find(x=>x.sala==='vns2' && x.isEndo);
+  const dow = currentDate.getDay();
+  const showEndo = dow !== 0;
+  let list = realCards.slice();
+  if(showEndo){
+    if(!endoV1) list.push({id:'__ghost_endo_vns1',sala:'vns1',time:'',name:'Endoscopia',surgeon:'',leito:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true});
+    if(!endoV2) list.push({id:'__ghost_endo_vns2',sala:'vns2',time:'',name:'Endoscopia',surgeon:'',leito:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true});
+  }
+  const v1 = list.filter(s=>s.sala==='vns1').sort((a,b)=>{ if(a.isEndo && !b.isEndo) return -1; if(!a.isEndo && b.isEndo) return 1; return (a.time||'').localeCompare(b.time||''); });
+  const v2 = list.filter(s=>s.sala==='vns2').sort((a,b)=>{ if(a.isEndo && !b.isEndo) return -1; if(!a.isEndo && b.isEndo) return 1; return (a.time||'').localeCompare(b.time||''); });
+  const realV1 = realCards.filter(s=>s.sala==='vns1').length;
+  const realV2 = realCards.filter(s=>s.sala==='vns2').length;
+  document.getElementById('sT').textContent = realV1+realV2;
+  document.getElementById('sV1').textContent = realV1;
+  document.getElementById('sV2').textContent = realV2;
+  if(!v1.length && !v2.length){ C.innerHTML='<div class="empty"><div class="ei">🩺</div><p>Nenhuma cirurgia.</p></div>'; return; }
+  let h = '';
+  if(v1.length){ h += '<div class="sh"><span class="sl-lbl sl1">● VNS 1</span><div class="sbar sb1"></div></div>'; h += v1.map(card).join(''); }
+  if(v2.length){ h += '<div class="sh"><span class="sl-lbl sl2">● VNS 2</span><div class="sbar sb2"></div></div>'; h += v2.map(card).join(''); }
+  C.innerHTML = h;
+}
+
+function card(s){
+  const v1 = s.sala==='vns1';
+  const endoCls = s.isEndo ? ' cendo' : '';
+  let sc='',pl='',c1='',c2='',c3='',c4='',c5='';
+  if(s.status==='confirmed'){sc='scon';pl='<span class="pill '+(v1?'pc1':'pc2')+'">👍🏼 Avaliado</span>';c1='acon';}
+  else if(s.status==='in-progress'){sc='spro';pl='<span class="pill ppr">🔵 Em andamento</span>';c2='apro';}
+  else if(s.status==='finished'){sc='sfin';pl='<span class="pill pfi">✅ Finalizada</span>';c3='afin';}
+  else if(s.status==='suspended'){sc='ssus';pl='<span class="pill psu">❌ Suspensa</span>';c4='asus';}
+  else if(s.status==='external'){sc='sext';pl='<span class="pill pex">⛔️ Externo</span>';c5='aext';}
+  else pl='<span class="pill pp">⏳ Aguardando</span>';
+  const wa = (s.phone && isAdmin && !s.isGhost) ? '<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="'+waLink(s)+'" target="_blank">📲 Avisar Anestesista</a></div>' : '';
+  const sur = s.surgeon || 'A definir';
+  let ane = s.anest || 'A definir';
+  if(s.isEndo && s.anest2) ane = (s.anest||'A definir')+' / '+s.anest2;
+  const hrTxt = s.time ? s.time : (s.isEndo ? 'Sem horário' : '--:--');
+  const hrCls = s.time ? '' : ' nohr';
+  const endoTag = s.isEndo ? '<span class="endo-tag">🔵 Fixa</span>' : '';
+  const editBtns = isAdmin ? '<div class="edit-row on"><button class="ecb eb" onclick="window.openModal(\''+s.sala+'\',\''+s.id+'\')">✏️ Editar</button>'+(s.isGhost?'':'<button class="ecb db" onclick="window.confDel(\''+s.id+'\',\''+s.name+'\')">🗑️ Excluir</button>')+'</div>' : '';
+  return '<div class="card '+(v1?'c1':'c2')+endoCls+' '+sc+'"><div class="ch"><span class="tb'+hrCls+'">'+hrTxt+'</span><div class="sbg"><button class="sbtn '+c1+'" onclick="window.setSt(\''+s.id+'\',\'confirmed\')">👍</button><button class="sbtn '+c2+'" onclick="window.setSt(\''+s.id+'\',\'in-progress\')">🔵</button><button class="sbtn '+c3+'" onclick="window.setSt(\''+s.id+'\',\'finished\')">✅</button><button class="sbtn '+c4+'" onclick="window.setSt(\''+s.id+'\',\'suspended\')">❌</button><button class="sbtn '+c5+'" onclick="window.setSt(\''+s.id+'\',\'external\')">⛔️</button></div></div><div class="cb"><div class="ir snr"><span class="il">Cirurgia</span><span class="iv">'+s.name+endoTag+'</span>'+pl+'</div><div class="ir"><span class="il">Cirurgião</span><span class="iv">'+sur+'</span></div><div class="ir"><span class="il">Leito</span><span class="iv">'+(s.leito||'—')+'</span></div><div class="ir snr"><span class="il">Anestesista'+(s.isEndo?'s':'')+'</span><span class="iv">'+ane+'</span></div>'+wa+editBtns+'</div></div>';
+}
+
+function waLink(s){
+  const t = new Date(); t.setHours(0,0,0,0);
+  const diff = Math.round((currentDate-t)/86400000);
+  const lbl = diff===0?'hoje':diff===1?'amanhã':String(currentDate.getDate()).padStart(2,'0')+'/'+(currentDate.getMonth()+1);
+  const leitoTxt = s.leito ? ' Leito: *'+s.leito+'*.' : '';
+  const hrTxt = s.time || 'horário a definir';
+  const m = 'Olá Dr(a). '+s.anest+'! Você foi escalado(a) para *'+s.name+'* às *'+hrTxt+'* '+lbl+' na *'+s.sala.toUpperCase()+'*. Cirurgião: '+(s.surgeon||'a definir')+'.'+leitoTxt+' ✅';
+  const p = s.phone.startsWith('55')?s.phone:'55'+s.phone;
+  return 'https://wa.me/'+p+'?text='+encodeURIComponent(m);
+}
+window.setSt = async (id,st)=>{
+  if(id.startsWith('__ghost_')){
+    const slLocal = id.includes('vns1') ? 'vns1' : 'vns2';
+    const dt = {sala:slLocal,date:dateKey(currentDate),time:'',name:'Endoscopia',surgeon:'',leito:'',anest:'',anest2:'',phone:'',status:st,isEndo:true};
+    await addDoc(col,dt);
+    toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',external:'⛔️ Externo',pending:'⏳ Removido'}[st]);
+    return;
+  }
+  const s = all.find(x=>x.id===id); if(!s) return;
+  const n = s.status===st?'pending':st;
+  await updateDoc(doc(db,'cirurgias',id),{status:n});
+  toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',external:'⛔️ Externo',pending:'⏳ Removido'}[n]);
+};
+
+window.confDel = async (id,n)=>{ if(!isAdmin){toast('⚠️ Só admin');return;} if(confirm('Excluir "'+n+'"?')){ await deleteDoc(doc(db,'cirurgias',id)); toast('🗑️ Excluída'); } };
+window.changeDay = (n)=>{ const d=new Date(currentDate); d.setDate(d.getDate()+n); loadDate(d); };
+window.openDatePicker = ()=>{ document.getElementById('dpInput').value=dateKey(currentDate); document.getElementById('dpOv').classList.add('open'); };
+window.closeDP = ()=>document.getElementById('dpOv').classList.remove('open');
+window.confirmDate = ()=>{ const v=document.getElementById('dpInput').value; if(!v) return; const p=v.split('-').map(Number); loadDate(new Date(p[0],p[1]-1,p[2])); window.closeDP(); };
+
+window.openLogin = ()=>{ document.getElementById('lPwd').value=''; document.getElementById('lOv').classList.add('open'); };
+window.closeLogin = ()=>document.getElementById('lOv').classList.remove('open');
+window.doLogin = ()=>{
+  const p = document.getElementById('lPwd').value;
+  if(p===ADMIN_PWD){ isAdmin=true; localStorage.setItem('escalavns_admin','1'); updateAdminUI(); window.closeLogin(); toast('✅ Admin ativo'); }
+  else toast('❌ Senha incorreta');
+};
+window.logout = ()=>{ isAdmin=false; localStorage.removeItem('escalavns_admin'); updateAdminUI(); toast('👋 Modo leitura'); };
+
+window.openModal = (sl,id)=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  editId=id; sala=sl;
+  let ex = null;
+  if(id && !id.startsWith('__ghost_')){ ex = all.find(x=>x.id===id); }
+  isEndo = (id && id.startsWith('__ghost_')) || (ex && ex.isEndo);
+  document.getElementById('fSala').value = ex?ex.sala:sl;
+  document.getElementById('fT').value = ex?ex.time:'';
+  document.getElementById('fN').value = ex?ex.name:(isEndo?'Endoscopia':'');
+  document.getElementById('fS').value = ex?(ex.surgeon||''):'';
+  document.getElementById('fL').value = ex?(ex.leito||''):'';
+  updateSelect();
+  if(ex && ex.anest){ const match = anests.find(a=>a.name===ex.anest); document.getElementById('fA').value = match?match.id:''; }
+  else document.getElementById('fA').value = '';
+  if(ex && ex.anest2){ const match2 = anests.find(a=>a.name===ex.anest2); document.getElementById('fA2').value = match2?match2.id:''; }
+  else document.getElementById('fA2').value = '';
+  document.getElementById('fA2Wrap').style.display = isEndo ? 'block' : 'none';
+  document.getElementById('mTitle').textContent = isEndo ? 'Endoscopia — '+sl.toUpperCase() : (ex?'Editar Cirurgia':'Nova — '+sl.toUpperCase());
+  const b = document.getElementById('bSav');
+  b.className = 'bsv '+(ex?'ed':(sl==='vns1'?'v1':'v2'));
+  b.textContent = 'Salvar ✓';
+  document.getElementById('sOv').classList.add('open');
+};
+window.closeMod = ()=>{ document.getElementById('sOv').classList.remove('open'); editId=null; isEndo=false; };
+
+window.saveSurg = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  const salaEsc=document.getElementById('fSala').value;
+  const t=document.getElementById('fT').value;
+  const n=document.getElementById('fN').value.trim();
+  const sr=document.getElementById('fS').value.trim();
+  const l=document.getElementById('fL').value.trim();
+  const aId=document.getElementById('fA').value;
+  const a2Id=document.getElementById('fA2').value;
+  if(!n){ toast('⚠️ Preencha o nome'); return; }
+  if(!isEndo && !t){ toast('⚠️ Preencha o horário'); return; }
+  let anestName='', phone='', anest2Name='';
+  if(aId){ const a = anests.find(x=>x.id===aId); if(a){ anestName=a.name; phone=a.phone||''; } }
+  if(isEndo && a2Id){ const a2 = anests.find(x=>x.id===a2Id); if(a2){ anest2Name=a2.name; } }
+  const dt = {sala:salaEsc,date:dateKey(currentDate),time:t,name:n,surgeon:sr,leito:l,anest:anestName,anest2:anest2Name,phone:phone,isEndo:isEndo};
+  if(editId && !editId.startsWith('__ghost_')){ await updateDoc(doc(db,'cirurgias',editId),dt); toast('✏️ Atualizada'); }
+  else { dt.status='pending'; await addDoc(col,dt); toast('✅ Adicionada'); }
+  window.closeMod();
+};
+
+window.openAnestList = ()=>{ if(!isAdmin){toast('⚠️ Só admin');return;} document.getElementById('aOv').classList.add('open'); };
+window.closeAL = ()=>document.getElementById('aOv').classList.remove('open');
+window.addAnest = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  const n=document.getElementById('aN').value.trim();
+  const p=document.getElementById('aP').value.trim().replace(/\D/g,'');
+  if(!n){ toast('⚠️ Digite o nome'); return; }
+  await addDoc(colA,{name:n,phone:p});
+  document.getElementById('aN').value=''; document.getElementById('aP').value='';
+  toast('✅ Cadastrado');
+};
+window.delAnest = async (id,n)=>{ if(!isAdmin){toast('⚠️ Só admin');return;} if(confirm('Remover '+n+'?')){ await deleteDoc(doc(db,'anestesistas',id)); toast('🗑️ Removido'); } };
+
+function renderAnestList(){
+  const el = document.getElementById('anestList');
+  if(!el) return;
+  if(!anests.length){ el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhum cadastrado</p>'; return; }
+  el.innerHTML = anests.map(a=>'<div class="anest-item"><div><div class="anest-name">'+a.name+'</div>'+(a.phone?'<div class="anest-phone">'+a.phone+'</div>':'')+'</div><button class="anest-del" onclick="window.delAnest(\''+a.id+'\',\''+a.name+'\')">✕</button></div>').join('');
+}
+
+window.openImport = ()=>{ if(!isAdmin){toast('⚠️ Só admin');return;} document.getElementById('iTxt').value=''; document.getElementById('iOv').classList.add('open'); };
+window.closeImp = ()=>document.getElementById('iOv').classList.remove('open');
+window.doImport = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  if(importing){ toast('⏳ Aguarde...'); return; }
+  const txt = document.getElementById('iTxt').value;
+  if(!txt.trim()){ toast('⚠️ Cole a lista'); return; }
+  importing = true;
+  const lines = txt.split('\n').map(l=>l.trim()).filter(l=>l);
+  let curSala = null, count = 0, skipped = 0, duplicates = 0;
+  const dateStr = dateKey(currentDate);
+  const qExist = query(col, where('date','==',dateStr));
+  const snap = await getDocs(qExist);
+  const existing = snap.docs.map(d=>d.data());
+  const seenInThisImport = new Set();
+  for(const line of lines){
+    const u = line.toUpperCase().replace(/\s/g,'');
+    if(u==='VNS1'||u.startsWith('VNS1-')||u.startsWith('VNS1:')){ curSala='vns1'; continue; }
+    if(u==='VNS2'||u.startsWith('VNS2-')||u.startsWith('VNS2:')){ curSala='vns2'; continue; }
+    if(!curSala) continue;
+    const m = line.match(/^(\d{1,2}):(\d{2})\s*[-–]\s*(.+)$/);
+    if(!m){ skipped++; continue; }
+    const time = m[1].padStart(2,'0')+':'+m[2];
+    const rest = m[3].split(/\s*[-–]\s*/).map(x=>x.trim()).filter(x=>x);
+    if(!rest.length){ skipped++; continue; }
+    const name = rest[0];
+    const surgeon = rest[1]||'';
+    const leito = rest[2]||'';
+    const key = curSala+'|'+time+'|'+name.toLowerCase();
+    if(seenInThisImport.has(key)){ duplicates++; continue; }
+    seenInThisImport.add(key);
+    const already = existing.some(x=>x.sala===curSala && x.time===time && (x.name||'').toLowerCase()===name.toLowerCase());
+    if(already){ duplicates++; continue; }
+    try{ await addDoc(col,{sala:curSala,date:dateStr,time:time,name:name,surgeon:surgeon,leito:leito,anest:'',anest2:'',phone:'',status:'pending',isEndo:false}); count++; }
+    catch(e){ skipped++; }
+  }
+  importing = false;
+  let msg = '✅ '+count+' importadas';
+  if(duplicates) msg += ' · '+duplicates+' duplicadas';
+  toast(msg);
+  window.closeImp();
+};
+
+window.openNotifs = ()=>{
+  renderNotifList();
+  notifs.forEach(n=>n.read=true);
+  saveNotifs();
+  document.getElementById('nOv').classList.add('open');
+  renderNotifBanner();
+  updateNotifBadge();
+};
+window.closeNotifs = ()=>document.getElementById('nOv').classList.remove('open');
+window.clearNotifs = ()=>{ if(confirm('Limpar todas?')){ notifs = []; saveNotifs(); renderNotifList(); renderNotifBanner(); updateNotifBadge(); toast('🔔 Limpas'); } };
+window.markRead = (id)=>{ const n = notifs.find(x=>x.id==id); if(n){ n.read=true; saveNotifs(); renderNotifBanner(); updateNotifBadge(); } };
+
+function renderNotifList(){
+  const el = document.getElementById('notifList');
+  if(!el) return;
+  if(!notifs.length){ el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhuma notificação</p>'; return; }
+  el.innerHTML = notifs.map(n=>'<div class="notif-row"><div class="notif-ttl">'+n.title+'</div><div class="notif-sub">'+n.sub+' · '+n.time+'</div></div>').join('');
+}
+
+window.openSaida = ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  updateSaidaSelect();
+  document.getElementById('saOv').classList.add('open');
+  renderSaidaList();
+};
+window.closeSaida = ()=>document.getElementById('saOv').classList.remove('open');
+
+async function saveSaida(){
+  const dateStr = dateKey(currentDate);
+  const dref = doc(db,'saidas',dateStr);
+  await setDoc(dref,{list:saidaList});
+}
+
+window.addSaida = async ()=>{
+  if(!isAdmin){ toast('⚠️ Só admin'); return; }
+  const sel = document.getElementById('saSel');
+  const id = sel.value;
+  if(!id){ toast('⚠️ Selecione'); return; }
+  const a = anests.find(x=>x.id===id);
+  if(!a) return;
+  if(saidaList.some(x=>x.id===id && !x.liberado)){ toast('⚠️ Já está na escala'); return; }
+  saidaList.push({id:id,name:a.name,liberado:false,horario:''});
+  await saveSaida();
+  sel.value = '';
+  toast('✅ Adicionado');
+};
+
+window.liberarSaida = async (idx)=>{
+  if(!isAdmin) return;
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  saidaList[idx].liberado = true;
+  saidaList[idx].horario = timeStr;
+  await saveSaida();
+  toast('📤 Liberado às '+timeStr);
+};
+
+window.unlibSaida = async (idx)=>{
+  if(!isAdmin) return;
+  saidaList[idx].liberado = false;
+  saidaList[idx].horario = '';
+  await saveSaida();
+  toast('↩️ Desfeito');
+};
+
+window.remSaida = async (idx)=>{
+  if(!isAdmin) return;
+  if(confirm('Remover '+saidaList[idx].name+'?')){
+    saidaList.splice(idx,1);
+    await saveSaida();
+    toast('🗑️ Removido');
+  }
+};
+
+function renderSaidaList(){
+  const el = document.getElementById('saidaList');
+  if(!el) return;
+  if(!saidaList.length){ el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhum anestesista adicionado</p>'; return; }
+  el.innerHTML = saidaList.map((s,i)=>'<div class="saida-row '+(s.liberado?'liberado':'')+'"><div class="saida-info"><div class="saida-name">'+s.name+'</div>'+(s.liberado?'<div class="saida-hr">📤 Liberado às '+s.horario+'</div>':'')+'</div><div class="saida-actions">'+(s.liberado?'<button class="saida-btn unlib" onclick="window.unlibSaida('+i+')">↩️</button>':'<button class="saida-btn lib" onclick="window.liberarSaida('+i+')">📤 Liberar</button>')+'<button class="saida-btn rem" onclick="window.remSaida('+i+')">✕</button></div></div>').join('');
 }
 
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
