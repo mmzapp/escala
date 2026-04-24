@@ -6,7 +6,7 @@
 <title>Escala</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--border:#1f2d45;--vns1:#cbd5e1;--vns1b:rgba(203,213,225,.35);--vns2:#7dd3fc;--vns2b:rgba(125,211,252,.35);--blue:#0ea5e9;--warn:#f59e0b;--danger:#ef4444;--orange:#fb923c;--text:#e2e8f0;--muted:#64748b;--r:14px}
+  :root{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;--border:#1f2d45;--vns1:#cbd5e1;--vns1b:rgba(203,213,225,.35);--vns2:#7dd3fc;--vns2b:rgba(125,211,252,.35);--blue:#0ea5e9;--warn:#f59e0b;--danger:#ef4444;--orange:#fb923c;--red:#dc2626;--text:#e2e8f0;--muted:#64748b;--r:14px}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;padding:0 0 80px}
   header{background:linear-gradient(135deg,#0d1b2e,#0a0f1e);border-bottom:1px solid var(--border);padding:16px 20px 14px;position:sticky;top:0;z-index:100}
@@ -71,16 +71,18 @@
   .card.spro{border-left-color:var(--blue)!important}
   .card.sfin{opacity:.5}
   .card.ssus{opacity:.4;border-left-color:var(--orange)!important}
+  .card.sext{border-left-color:var(--red)!important}
   .ch{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid var(--border)}
   .tb{border-radius:8px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:17px;font-weight:700;letter-spacing:.5px;color:#0a0f1e}
   .c1 .tb{background:var(--vns1);border:1px solid var(--vns1);box-shadow:0 2px 8px rgba(203,213,225,.35);color:#0a0f1e}
   .c2 .tb{background:var(--vns2);border:1px solid var(--vns2);box-shadow:0 2px 8px rgba(125,211,252,.35);color:#0a0f1e}
-  .sbg{display:flex;gap:4px}
-  .sbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .sbg{display:flex;gap:3px}
+  .sbtn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .sbtn.acon{background:rgba(203,213,225,.15);border-color:var(--vns1)}
   .sbtn.apro{background:rgba(14,165,233,.15);border-color:var(--blue)}
   .sbtn.afin{background:rgba(100,116,139,.15)}
   .sbtn.asus{background:rgba(251,146,60,.15);border-color:var(--orange)}
+  .sbtn.aext{background:rgba(220,38,38,.15);border-color:var(--red)}
   .cb{padding:10px 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .ir{display:flex;flex-direction:column}
   .il{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:2px}
@@ -96,6 +98,7 @@
   @keyframes loadBar{0%{left:-100%}100%{left:100%}}
   .pfi{background:rgba(100,116,139,.12);color:var(--muted)}
   .psu{background:rgba(251,146,60,.12);color:var(--orange)}
+  .pex{background:rgba(220,38,38,.12);color:var(--red)}
   .wbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:9px;color:#25d366;font-size:12px;font-weight:700;text-decoration:none}
   .edit-row{grid-column:1/-1;display:none;gap:8px;margin-top:4px}
   .edit-row.on{display:flex}
@@ -133,6 +136,7 @@
   .notif-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .notif-row.fin{border-color:rgba(100,116,139,.4)}
   .notif-row.sus{border-color:rgba(251,146,60,.4);background:rgba(251,146,60,.05)}
+  .notif-row.ext{border-color:rgba(220,38,38,.4);background:rgba(220,38,38,.05)}
   .notif-ttl{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
   .notif-sub{font-size:11px;color:var(--muted)}
 </style>
@@ -223,7 +227,6 @@
 </div></div>
 
 <div class="toast" id="toast"></div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -266,7 +269,11 @@ function fmt(d){
 function saveNotifs(){ localStorage.setItem('escalavns_notifs', JSON.stringify(notifs.slice(0,50))); }
 
 function addNotif(surg, newStatus){
-  const lbl = newStatus==='finished'?'✅ Finalizada':'❌ Suspensa';
+  let lbl;
+  if(newStatus==='finished') lbl='✅ Finalizada';
+  else if(newStatus==='suspended') lbl='❌ Suspensa';
+  else if(newStatus==='external') lbl='⛔️ Externo';
+  else return;
   const now = new Date();
   const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   notifs.unshift({
@@ -336,7 +343,7 @@ function loadDate(d){
       for(const surg of newAll){
         const prev = prevStatus[surg.id];
         if(prev!==undefined && prev!==surg.status){
-          if(surg.status==='finished' || surg.status==='suspended'){
+          if(surg.status==='finished' || surg.status==='suspended' || surg.status==='external'){
             addNotif(surg, surg.status);
           }
         }
@@ -381,11 +388,12 @@ function render(){
 
 function card(s){
   const v1 = s.sala==='vns1';
-  let sc='',pl='',c1='',c2='',c3='',c4='';
+  let sc='',pl='',c1='',c2='',c3='',c4='',c5='';
   if(s.status==='confirmed'){sc='scon';pl=`<span class="pill ${v1?'pc1':'pc2'}">👍🏼 Avaliado</span>`;c1='acon';}
   else if(s.status==='in-progress'){sc='spro';pl=`<span class="pill ppr">🔵 Em andamento</span>`;c2='apro';}
   else if(s.status==='finished'){sc='sfin';pl=`<span class="pill pfi">✅ Finalizada</span>`;c3='afin';}
   else if(s.status==='suspended'){sc='ssus';pl=`<span class="pill psu">❌ Suspensa</span>`;c4='asus';}
+  else if(s.status==='external'){sc='sext';pl=`<span class="pill pex">⛔️ Externo</span>`;c5='aext';}
   else pl=`<span class="pill pp">⏳ Aguardando</span>`;
   const wa = (s.phone && isAdmin) ? `<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="${waLink(s)}" target="_blank">📲 Avisar Anestesista</a></div>` : '';
   const sur = s.surgeon || 'A definir';
@@ -399,6 +407,7 @@ function card(s){
     <button class="sbtn ${c2}" onclick="window.setSt('${s.id}','in-progress')">🔵</button>
     <button class="sbtn ${c3}" onclick="window.setSt('${s.id}','finished')">✅</button>
     <button class="sbtn ${c4}" onclick="window.setSt('${s.id}','suspended')">❌</button>
+    <button class="sbtn ${c5}" onclick="window.setSt('${s.id}','external')">⛔️</button>
   </div></div><div class="cb">
     <div class="ir snr"><span class="il">Cirurgia</span><span class="iv">${s.name}</span>${pl}</div>
     <div class="ir"><span class="il">Cirurgião</span><span class="iv">${sur}</span></div>
@@ -423,7 +432,7 @@ window.setSt = async (id,st)=>{
   const s = all.find(x=>x.id===id); if(!s) return;
   const n = s.status===st?'pending':st;
   await updateDoc(doc(db,'cirurgias',id),{status:n});
-  toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',pending:'⏳ Removido'}[n]);
+  toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',external:'⛔️ Externo',pending:'⏳ Removido'}[n]);
 };
 window.confDel = async (id,n)=>{ if(!isAdmin){toast('⚠️ Só admin');return;} if(confirm(`Excluir "${n}"?`)){ await deleteDoc(doc(db,'cirurgias',id)); toast('🗑️ Excluída'); } };
 window.changeDay = (n)=>{ const d=new Date(currentDate); d.setDate(d.getDate()+n); loadDate(d); };
@@ -563,7 +572,12 @@ window.markRead = (id)=>{
 function renderNotifList(){
   const el = document.getElementById('notifList');
   if(!notifs.length){ el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhuma notificação</p>'; return; }
-  el.innerHTML = notifs.map(n=>`<div class="notif-row ${n.status==='finished'?'fin':'sus'}"><div class="notif-ttl">${n.title}</div><div class="notif-sub">${n.sub} · ${n.time}</div></div>`).join('');
+  el.innerHTML = notifs.map(n=>{
+    let cls = 'fin';
+    if(n.status==='suspended') cls='sus';
+    else if(n.status==='external') cls='ext';
+    return `<div class="notif-row ${cls}"><div class="notif-ttl">${n.title}</div><div class="notif-sub">${n.sub} · ${n.time}</div></div>`;
+  }).join('');
 }
 
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
