@@ -459,3 +459,248 @@ loadDate(new Date());
 </script>
 </body>
 </html>
+<body>
+<header>
+<div class="ht">
+<div class="logo"><div class="logo-icon">🏥</div><div><h1>MovveMed</h1><p>Centro Cirúrgico</p></div></div>
+<div class="hdr-btns" id="hdrBtns">
+<button class="hdr-btn casa" onclick="openSaida()" title="Escala de Saída">🏠</button>
+<button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>
+</div>
+</div>
+</header>
+<div class="admin-bar" id="adminBar"><span>✅ Modo administrador ativo</span><button class="hdr-btn" onclick="logout()">Sair</button></div>
+<div class="notif-banner" id="notifBanner"></div>
+<div class="date-nav">
+<button class="dnav-btn" onclick="changeDay(-1)">‹</button>
+<div class="date-display" id="dateDisplay" onclick="openDatePicker()">
+<div class="dd-day" id="ddDay"></div>
+<div class="dd-date" id="ddDate"></div>
+<div class="today-badge">Hoje</div>
+</div>
+<button class="dnav-btn" onclick="changeDay(1)">›</button>
+</div>
+<div class="sync-row"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Conectando...</span></div>
+<div class="legend"><div class="li l1"><span class="ld ld1"></span> VNS 1</div><div class="li l2"><span class="ld ld2"></span> VNS 2</div></div>
+<div class="stats">
+<div class="stat st"><div class="sn" id="sT">0</div><div class="sl">Total</div></div>
+<div class="stat sv1"><div class="sn" id="sV1">0</div><div class="sl">VNS 1</div></div>
+<div class="stat sv2"><div class="sn" id="sV2">0</div><div class="sl">VNS 2</div></div>
+</div>
+<div class="add-btns" id="addBtns">
+<button class="add-btn v1" onclick="openModal('vns1',null)">＋ VNS 1</button>
+<button class="add-btn v2" onclick="openModal('vns2',null)">＋ VNS 2</button>
+</div>
+<div class="tw" id="mainList"><div class="loading"><div class="spinner"></div><p>Carregando...</p></div></div>
+<div class="ov" id="lOv"><div class="modal">
+<div class="mh"></div><h2>🔐 Acesso Administrador</h2>
+<div class="ff"><label>Senha</label><input type="password" id="lPwd" placeholder="Digite a senha"/></div>
+<div class="mbtns"><button class="bcn" onclick="closeLogin()">Cancelar</button><button class="bsv v1" onclick="doLogin()">Entrar ✓</button></div>
+</div></div>
+<div class="ov" id="dpOv"><div class="modal">
+<div class="mh"></div><h2>📅 Ir para uma data</h2>
+<input type="date" id="dpInput"/>
+<div class="mbtns"><button class="bcn" onclick="closeDP()">Cancelar</button><button class="bsv v1" onclick="confirmDate()">Ir ✓</button></div>
+</div></div>
+<div class="ov" id="sOv"><div class="modal">
+<div class="mh"></div><h2 id="mTitle">Nova Cirurgia</h2>
+<div class="ff"><label>Torre</label><select id="fSala" onchange="updateSalasOptions()"><option value="vns1">VNS 1</option><option value="vns2">VNS 2</option></select></div>
+<div class="ff"><label>Horário</label><input type="time" id="fT"/></div>
+<div class="ff"><label>Nome da Cirurgia</label><input type="text" id="fN" placeholder="Ex: Apendicectomia"/></div>
+<div class="ff"><label>Cirurgião</label><input type="text" id="fS" placeholder="Dr(a). Nome"/></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="ff"><label>Sala</label><select id="fRoom"><option value="">Sem sala</option></select></div>
+<div class="ff"><label>Leito</label><input type="text" id="fL" placeholder="302B"/></div>
+</div>
+<div class="ff"><label>Anestesista</label><select id="fA"><option value="">A definir</option></select></div>
+<div class="ff" id="fA2Wrap" style="display:none"><label>2º Anestesista</label><select id="fA2"><option value="">A definir</option></select></div>
+<div class="mbtns"><button class="bcn" onclick="closeMod()">Cancelar</button><button class="bsv v1" id="bSav" onclick="saveSurg()">Salvar ✓</button></div>
+</div></div>
+<div class="ov" id="aOv"><div class="modal">
+<div class="mh"></div><h2>👥 Anestesistas</h2>
+<div class="ff"><label>Nome</label><input type="text" id="aN" placeholder="Dr(a). Nome"/></div>
+<div class="ff"><label>WhatsApp</label><input type="tel" id="aP" placeholder="(11) 99999-9999"/></div>
+<button class="bsv v1" onclick="addAnest()" style="width:100%;margin-bottom:16px">＋ Adicionar</button>
+<div id="anestList"></div>
+<div class="mbtns"><button class="bcn" onclick="closeAL()" style="flex:1">Fechar</button></div>
+</div></div>
+<div class="ov" id="iOv"><div class="modal">
+<div class="mh"></div><h2>📋 Importar Lista</h2>
+<div class="imp-info">Cole o mapa no formato:<br><b>VNS1</b><br>05:00 - Cirurgia - Cirurgião - Leito<br><b>VNS2</b><br>07:00 - Cirurgia - Cirurgião</div>
+<div class="ff"><label>Cole a lista aqui</label><textarea id="iTxt" style="min-height:200px"></textarea></div>
+<div class="mbtns"><button class="bcn" onclick="closeImp()">Cancelar</button><button class="bsv v1" onclick="doImport()">Importar ✓</button></div>
+</div></div>
+<div class="ov" id="nOv"><div class="modal">
+<div class="mh"></div><h2>🔔 Notificações</h2>
+<div class="notif-list" id="notifList"></div>
+<div class="mbtns"><button class="bcn" onclick="clearNotifs()" style="flex:1">Limpar</button><button class="bsv v1" onclick="closeNotifs()" style="flex:1">Fechar</button></div>
+</div></div>
+<div class="ov" id="saOv"><div class="modal">
+<div class="mh"></div><h2>🏠 Escala de Saída</h2>
+<div id="saidaViewerBox" style="display:none"><div class="saida-only-view">👁️ Modo visualização — apenas administradores podem editar</div></div>
+<div class="saida-list" id="saidaList"></div>
+<div id="saidaAdminBox" style="margin-top:14px">
+<div class="imp-info" style="background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:var(--orange);font-size:11px">🔴 Ocupado · 🟢 Livre · Use <b>⬆️ ⬇️</b> para reorganizar.</div>
+<div class="ff"><label>Adicionar anestesista</label><select id="saSel"><option value="">-- Selecione --</option></select></div>
+<button class="bsv v1" onclick="addSaida()" style="width:100%">＋ Adicionar</button>
+</div>
+<div class="mbtns" style="margin-top:14px"><button class="bcn" onclick="closeSaida()" style="flex:1">Fechar</button></div>
+</div></div>
+<div class="ov" id="rOv"><div class="modal">
+<div class="mh"></div><h2 id="relTitle">📊 Relatório do Dia</h2>
+<div id="relView">
+<div class="rel-obs-display empty" id="relObsDisplay">Nenhuma observação registrada.</div>
+<div class="rel-section"><div class="rel-title cc">🔪 Centro Cirúrgico</div><div class="rel-list" id="relCC"></div></div>
+<div class="rel-section"><div class="rel-title sadt">🏥 SADT</div><div class="rel-list" id="relSADT"></div></div>
+<div class="rel-section"><div class="rel-title hemo">🩸 Hemodinâmica</div><div class="rel-list" id="relHemo"></div></div>
+<button class="bsv v1" onclick="editRelObs()" style="width:100%;margin-top:6px">✏️ Editar Observações</button>
+</div>
+<div id="relEdit" style="display:none">
+<div class="ff"><label>Observações do Dia</label><textarea id="relObsInput" style="min-height:160px"></textarea></div>
+<div class="mbtns" style="margin-top:0"><button class="bcn" onclick="cancelRelObs()" style="flex:1">Cancelar</button><button class="bsv v1" onclick="saveRelObs()" style="flex:1">Salvar ✓</button></div>
+</div>
+<div class="mbtns"><button class="bcn" onclick="closeRel()" style="flex:1">Fechar</button><button class="bsv ed" onclick="copyRel()" style="flex:1">📋 Copiar</button></div>
+</div></div>
+<div class="ov" id="cirOv"><div class="modal">
+<div class="mh"></div><h2>👨‍⚕️ Gerenciamento de Cirurgiões</h2>
+<div class="cir-stats">
+<div class="cir-stat tot"><div class="csn" id="csTotal">0</div><div class="csl">Total</div></div>
+<div class="cir-stat int"><div class="csn" id="csInt">0</div><div class="csl">Interno</div></div>
+<div class="cir-stat ext"><div class="csn" id="csExt">0</div><div class="csl">Externo</div></div>
+<div class="cir-stat var"><div class="csn" id="csVar">0</div><div class="csl">Varia</div></div>
+</div>
+<input class="cir-search" id="cirSearch" type="text" placeholder="🔍 Buscar cirurgião..." autocomplete="off"/>
+<div class="cir-filters">
+<button class="cir-filt on" id="filtAll" onclick="setCirFilter('all')">Todos</button>
+<button class="cir-filt int" id="filtInt" onclick="setCirFilter('interno')">🟢 Interno</button>
+<button class="cir-filt ext" id="filtExt" onclick="setCirFilter('externo')">🔴 Externo</button>
+<button class="cir-filt var" id="filtVar" onclick="setCirFilter('varia')">🟡 Varia</button>
+</div>
+<div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:10px">
+<input type="text" id="cirNewName" placeholder="Nome do cirurgião" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Sora',sans-serif"/>
+<select id="cirNewType" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px;color:var(--text);font-size:13px;font-family:'Sora',sans-serif"><option value="interno">🟢 Interno</option><option value="externo">🔴 Externo</option><option value="varia">🟡 Varia</option></select>
+</div>
+<button class="bsv v1" onclick="addCirurgiao()" style="width:100%;margin-bottom:10px;padding:10px;font-size:13px">＋ Adicionar Cirurgião</button>
+<div class="cir-list" id="cirList"></div>
+<div class="mbtns"><button class="bcn" onclick="closeCir()" style="flex:1">Fechar</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs, setDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig = {apiKey:"AIzaSyDYkrbxndcEgH9uz0dNbkUF8gtNoAMe7OY",authDomain:"escala-vns.firebaseapp.com",projectId:"escala-vns",storageBucket:"escala-vns.firebasestorage.app",messagingSenderId:"913644431265",appId:"1:913644431265:web:8a492e0d9ad3ee190c0de0"};
+const ADMIN_PWD = "mmzggs0619";
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const col = collection(db,'cirurgias');
+const colA = collection(db,'anestesistas');
+const colC = collection(db,'cirurgioes');
+const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const SADT_KEYWORDS = ['endoscopia','ecote','bmo','rnm','cetamina'];
+const SADT_SURGEONS = ['tt','tte'];
+const HEMO_KEYWORDS = ['cate','angiografia','arteriografia','quimio intra','químio intra','quimioterapia intra','drenagem biliar','ponte'];
+const SALAS_VNS1 = [1,2,3,4,5,6];
+const SALAS_VNS2 = [7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+
+let currentDate = new Date(); currentDate.setHours(0,0,0,0);
+let unsub=null,unsubSaida=null,all=[],anests=[],saidaList=[],cirurgioes=[],editId=null,sala='vns1';
+let isAdmin = localStorage.getItem('escalavns_admin')==='1';
+let notifs = JSON.parse(localStorage.getItem('escalavns_notifs')||'[]');
+let prevStatus={},firstLoad=true,importing=false,isEndo=false;
+let currentRelObs='';
+let cirFilter='all';
+let cirSearchText='';
+let cirSearchInitialized=false;
+
+function norm(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmt(d){const t=new Date();t.setHours(0,0,0,0);const diff=Math.round((d-t)/86400000);const dd=document.getElementById('dateDisplay');dd.className='date-display '+(diff===0?'today':diff>0?'future':'past');document.getElementById('ddDay').textContent=days[d.getDay()];document.getElementById('ddDate').textContent=String(d.getDate()).padStart(2,'0')+' '+months[d.getMonth()]+' '+d.getFullYear();}
+function saveNotifs(){localStorage.setItem('escalavns_notifs',JSON.stringify(notifs.slice(0,50)));}
+function addNotif(surg,newStatus){let lbl;if(newStatus==='finished')lbl='✅ Finalizada';else if(newStatus==='suspended')lbl='❌ Suspensa';else if(newStatus==='external')lbl='⛔️ Externo';else return;const now=new Date();const timeStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');notifs.unshift({id:Date.now()+Math.random(),title:lbl+': '+surg.name,sub:surg.sala.toUpperCase()+' · '+(surg.time||'s/hr')+' · '+(surg.surgeon||'sem cirurgião'),status:newStatus,time:timeStr,read:false});saveNotifs();renderNotifBanner();updateNotifBadge();}
+function renderNotifBanner(){if(!isAdmin){document.getElementById('notifBanner').classList.remove('on');return;}const unread=notifs.filter(n=>!n.read).slice(0,3);const b=document.getElementById('notifBanner');if(!unread.length){b.classList.remove('on');return;}b.classList.add('on');b.innerHTML=unread.map(n=>'<div class="notif-item"><span>'+n.title+'</span><button class="notif-close" onclick="window.markRead(\''+n.id+'\')">✕</button></div>').join('');}
+function updateNotifBadge(){const badge=document.getElementById('sinoBadge');const unread=notifs.filter(n=>!n.read).length;if(badge){if(unread>0){badge.classList.add('on');badge.textContent=unread>9?'9+':unread;}else badge.classList.remove('on');}}
+function updateAdminUI(){const bar=document.getElementById('adminBar');const addB=document.getElementById('addBtns');const hb=document.getElementById('hdrBtns');if(isAdmin){bar.classList.add('on');addB.classList.add('on');hb.innerHTML='<div style="position:relative"><button class="hdr-btn sino" onclick="window.openNotifs()">🔔<span class="badge-count" id="sinoBadge"></span></button></div><button class="hdr-btn casa" onclick="window.openSaida()">🏠</button><div style="position:relative"><button class="ham-btn" onclick="window.toggleHam(event)"><span></span><span></span><span></span></button><div class="ham-menu" id="hamMenu"><button class="ham-item" onclick="window.hamGo(\'rel\')">📊 Relatórios</button><button class="ham-item" onclick="window.hamGo(\'import\')">📋 Importar</button><button class="ham-item" onclick="window.hamGo(\'anest\')">👥 Anestesistas</button><button class="ham-item" onclick="window.hamGo(\'cir\')">👨‍⚕️ Cirurgiões</button></div></div><button class="hdr-btn" onclick="logout()">Sair</button>';updateNotifBadge();}else{bar.classList.remove('on');addB.classList.remove('on');hb.innerHTML='<button class="hdr-btn casa" onclick="window.openSaida()">🏠</button><button class="hdr-btn locked" onclick="openLogin()">🔐 Admin</button>';document.getElementById('notifBanner').classList.remove('on');}renderNotifBanner();render();}
+window.toggleHam=(e)=>{e.stopPropagation();const m=document.getElementById('hamMenu');if(m)m.classList.toggle('on');};
+window.hamGo=(w)=>{const m=document.getElementById('hamMenu');if(m)m.classList.remove('on');if(w==='import')window.openImport();else if(w==='anest')window.openAnestList();else if(w==='rel')window.openRel();else if(w==='cir')window.openCir();};
+document.addEventListener('click',(e)=>{const m=document.getElementById('hamMenu');if(m && m.classList.contains('on') && !e.target.closest('.ham-btn') && !e.target.closest('.ham-menu')){m.classList.remove('on');}});
+function loadDate(d){if(unsub)unsub();if(unsubSaida)unsubSaida();currentDate=new Date(d);currentDate.setHours(0,0,0,0);fmt(currentDate);document.getElementById('mainList').innerHTML='<div class="loading"><div class="spinner"></div><p>Carregando...</p></div>';document.getElementById('syncDot').className='sync-dot';document.getElementById('syncTxt').textContent='Conectando...';firstLoad=true;prevStatus={};const q=query(col,where('date','==',dateKey(currentDate)));unsub=onSnapshot(q,(s)=>{const newAll=s.docs.map(d=>({id:d.id,...d.data()}));if(!firstLoad && isAdmin){for(const surg of newAll){const prev=prevStatus[surg.id];if(prev!==undefined && prev!==surg.status){if(surg.status==='finished'||surg.status==='suspended'||surg.status==='external'){addNotif(surg,surg.status);}}}}prevStatus={};newAll.forEach(x=>{prevStatus[x.id]=x.status;});firstLoad=false;all=newAll;document.getElementById('syncDot').className='sync-dot live';document.getElementById('syncTxt').textContent='Ao vivo';render();renderSaidaList();},(e)=>{document.getElementById('syncTxt').textContent='Erro: '+e.message;});loadSaida();}
+function loadSaida(){const dateStr=dateKey(currentDate);const dref=doc(db,'saidas',dateStr);unsubSaida=onSnapshot(dref,(snap)=>{if(snap.exists()){saidaList=snap.data().list||[];}else{saidaList=[];}renderSaidaList();});}
+onSnapshot(colA,(s)=>{anests=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));updateSelect();renderAnestList();updateSaidaSelect();});
+onSnapshot(colC,(s)=>{cirurgioes=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));renderCirList();updateCirStats();});
+function updateSelect(){const sel=document.getElementById('fA');const sel2=document.getElementById('fA2');if(!sel||!sel2)return;const cur=sel.value;const cur2=sel2.value;const opts='<option value="">-- A definir --</option>'+anests.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join('');sel.innerHTML=opts;sel2.innerHTML=opts;sel.value=cur;sel2.value=cur2;}
+window.updateSalasOptions=()=>{const torre=document.getElementById('fSala').value;const sel=document.getElementById('fRoom');if(!sel)return;const cur=sel.value;const salas=torre==='vns1'?SALAS_VNS1:SALAS_VNS2;sel.innerHTML='<option value="">— Sem sala —</option>'+salas.map(n=>'<option value="'+n+'">Sala '+n+'</option>').join('');if(cur && salas.includes(parseInt(cur)))sel.value=cur;else sel.value='';};
+function updateSaidaSelect(){const sel=document.getElementById('saSel');if(!sel)return;sel.innerHTML='<option value="">-- Selecione --</option>'+anests.map(a=>'<option value="'+a.id+'">'+a.name+'</option>').join('');}
+function render(){const C=document.getElementById('mainList');const realCards=all.slice();const endoV1=realCards.find(x=>x.sala==='vns1' && x.isEndo);const endoV2=realCards.find(x=>x.sala==='vns2' && x.isEndo);const dow=currentDate.getDay();const showEndo=dow!==0;let list=realCards.slice();if(showEndo){if(!endoV1)list.push({id:'__ghost_endo_vns1',sala:'vns1',time:'',name:'Endoscopia',surgeon:'',leito:'',room:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true});if(!endoV2)list.push({id:'__ghost_endo_vns2',sala:'vns2',time:'',name:'Endoscopia',surgeon:'',leito:'',room:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:true,isGhost:true});}const v1=list.filter(s=>s.sala==='vns1').sort((a,b)=>{if(a.isEndo && !b.isEndo)return -1;if(!a.isEndo && b.isEndo)return 1;return(a.time||'').localeCompare(b.time||'');});const v2=list.filter(s=>s.sala==='vns2').sort((a,b)=>{if(a.isEndo && !b.isEndo)return -1;if(!a.isEndo && b.isEndo)return 1;return(a.time||'').localeCompare(b.time||'');});const realV1=realCards.filter(s=>s.sala==='vns1').length;const realV2=realCards.filter(s=>s.sala==='vns2').length;document.getElementById('sT').textContent=realV1+realV2;document.getElementById('sV1').textContent=realV1;document.getElementById('sV2').textContent=realV2;if(!v1.length && !v2.length){C.innerHTML='<div class="empty"><div class="ei">🩺</div><p>Nenhuma cirurgia.</p></div>';return;}let h='';if(v1.length){h+='<div class="sh"><span class="sl-lbl sl1">● VNS 1</span><div class="sbar sb1"></div></div>';h+=v1.map(card).join('');}if(v2.length){h+='<div class="sh"><span class="sl-lbl sl2">● VNS 2</span><div class="sbar sb2"></div></div>';h+=v2.map(card).join('');}C.innerHTML=h;}
+function card(s){const v1=s.sala==='vns1';const endoCls=s.isEndo?' cendo':'';let sc='',pl='',c1='',c2='',c3='',c4='',c5='';if(s.status==='confirmed'){sc='scon';pl='<span class="pill '+(v1?'pc1':'pc2')+'">👍🏼 Avaliado</span>';c1='acon';}else if(s.status==='in-progress'){sc='spro';pl='<span class="pill ppr">🔵 Em andamento</span>';c2='apro';}else if(s.status==='finished'){sc='sfin';pl='<span class="pill pfi">✅ Finalizada</span>';c3='afin';}else if(s.status==='suspended'){sc='ssus';pl='<span class="pill psu">❌ Suspensa</span>';c4='asus';}else if(s.status==='external'){sc='sext';pl='<span class="pill pex">⛔️ Externo</span>';c5='aext';}else pl='<span class="pill pp">⏳ Aguardando</span>';const wa=(s.phone && isAdmin && !s.isGhost)?'<div class="ir" style="grid-column:1/-1"><a class="wbtn" href="'+waLink(s)+'" target="_blank">📲 Avisar Anestesista</a></div>':'';const sur=s.surgeon||'A definir';let ane=s.anest||'A definir';if(s.isEndo && s.anest2)ane=(s.anest||'A definir')+' / '+s.anest2;const hrTxt=s.time?s.time:(s.isEndo?'Sem horário':'--:--');const hrCls=s.time?'':' nohr';const endoTag=s.isEndo?'<span class="endo-tag">⭐ Fixa</span>':'';const editBtns=isAdmin?'<div class="edit-row on"><button class="ecb eb" onclick="window.openModal(\''+s.sala+'\',\''+s.id+'\')">✏️ Editar</button>'+(s.isGhost?'':'<button class="ecb db" onclick="window.confDel(\''+s.id+'\',\''+s.name+'\')">🗑️ Excluir</button>')+'</div>':'';return '<div class="card '+(v1?'c1':'c2')+endoCls+' '+sc+'"><div class="ch"><span class="tb'+hrCls+'">'+hrTxt+'</span><div class="sbg"><button class="sbtn '+c1+'" onclick="window.setSt(\''+s.id+'\',\'confirmed\')">👍</button><button class="sbtn '+c2+'" onclick="window.setSt(\''+s.id+'\',\'in-progress\')">🔵</button><button class="sbtn '+c3+'" onclick="window.setSt(\''+s.id+'\',\'finished\')">✅</button><button class="sbtn '+c4+'" onclick="window.setSt(\''+s.id+'\',\'suspended\')">❌</button><button class="sbtn '+c5+'" onclick="window.setSt(\''+s.id+'\',\'external\')">⛔️</button></div></div><div class="cb"><div class="ir snr"><span class="il">Cirurgia</span><span class="iv">'+s.name+endoTag+'</span>'+pl+'</div><div class="ir"><span class="il">Cirurgião</span><span class="iv">'+sur+'</span></div><div class="ir"><span class="il">Sala</span><span class="iv">'+(s.room?'Sala '+s.room:'—')+'</span></div><div class="ir"><span class="il">Leito</span><span class="iv">'+(s.leito||'—')+'</span></div><div class="ir snr"><span class="il">Anestesista'+(s.isEndo?'s':'')+'</span><span class="iv">'+ane+'</span></div>'+wa+editBtns+'</div></div>';}
+function waLink(s){const t=new Date();t.setHours(0,0,0,0);const diff=Math.round((currentDate-t)/86400000);const lbl=diff===0?'hoje':diff===1?'amanhã':String(currentDate.getDate()).padStart(2,'0')+'/'+(currentDate.getMonth()+1);const leitoTxt=s.leito?' Leito: *'+s.leito+'*.':'';const salaTxt=s.room?' Sala: *'+s.room+'*.':'';const hrTxt=s.time||'horário a definir';const m='Olá Dr(a). '+s.anest+'! Você foi escalado(a) para *'+s.name+'* às *'+hrTxt+'* '+lbl+' na *'+s.sala.toUpperCase()+'*. Cirurgião: '+(s.surgeon||'a definir')+'.'+salaTxt+leitoTxt+' ✅';const p=s.phone.startsWith('55')?s.phone:'55'+s.phone;return 'https://wa.me/'+p+'?text='+encodeURIComponent(m);}
+window.setSt=async(id,st)=>{if(id.startsWith('__ghost_')){const slLocal=id.includes('vns1')?'vns1':'vns2';const dt={sala:slLocal,date:dateKey(currentDate),time:'',name:'Endoscopia',surgeon:'',leito:'',room:'',anest:'',anest2:'',phone:'',status:st,isEndo:true};await addDoc(col,dt);toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',external:'⛔️ Externo',pending:'⏳ Removido'}[st]);return;}const s=all.find(x=>x.id===id);if(!s)return;const n=s.status===st?'pending':st;await updateDoc(doc(db,'cirurgias',id),{status:n});toast({confirmed:'👍🏼 Avaliado','in-progress':'🔵 Em andamento',finished:'✅ Finalizada',suspended:'❌ Suspensa',external:'⛔️ Externo',pending:'⏳ Removido'}[n]);};
+window.confDel=async(id,n)=>{if(!isAdmin){toast('⚠️ Só admin');return;}if(confirm('Excluir "'+n+'"?')){await deleteDoc(doc(db,'cirurgias',id));toast('🗑️ Excluída');}};
+window.changeDay=(n)=>{const d=new Date(currentDate);d.setDate(d.getDate()+n);loadDate(d);};
+window.openDatePicker=()=>{document.getElementById('dpInput').value=dateKey(currentDate);document.getElementById('dpOv').classList.add('open');};
+window.closeDP=()=>document.getElementById('dpOv').classList.remove('open');
+window.confirmDate=()=>{const v=document.getElementById('dpInput').value;if(!v)return;const p=v.split('-').map(Number);loadDate(new Date(p[0],p[1]-1,p[2]));window.closeDP();};
+window.openLogin=()=>{document.getElementById('lPwd').value='';document.getElementById('lOv').classList.add('open');};
+window.closeLogin=()=>document.getElementById('lOv').classList.remove('open');
+window.doLogin=()=>{const p=document.getElementById('lPwd').value;if(p===ADMIN_PWD){isAdmin=true;localStorage.setItem('escalavns_admin','1');updateAdminUI();window.closeLogin();toast('✅ Admin ativo');}else toast('❌ Senha incorreta');};
+window.logout=()=>{isAdmin=false;localStorage.removeItem('escalavns_admin');updateAdminUI();toast('👋 Modo leitura');};
+window.openModal=(sl,id)=>{if(!isAdmin){toast('⚠️ Só admin');return;}editId=id;sala=sl;let ex=null;if(id && !id.startsWith('__ghost_')){ex=all.find(x=>x.id===id);}isEndo=(id && id.startsWith('__ghost_'))||(ex && ex.isEndo);document.getElementById('fSala').value=ex?ex.sala:sl;document.getElementById('fT').value=ex?ex.time:'';document.getElementById('fN').value=ex?ex.name:(isEndo?'Endoscopia':'');document.getElementById('fS').value=ex?(ex.surgeon||''):'';document.getElementById('fL').value=ex?(ex.leito||''):'';window.updateSalasOptions();if(ex && ex.room)document.getElementById('fRoom').value=ex.room;else document.getElementById('fRoom').value='';updateSelect();if(ex && ex.anest){const match=anests.find(a=>a.name===ex.anest);document.getElementById('fA').value=match?match.id:'';}else document.getElementById('fA').value='';if(ex && ex.anest2){const match2=anests.find(a=>a.name===ex.anest2);document.getElementById('fA2').value=match2?match2.id:'';}else document.getElementById('fA2').value='';document.getElementById('fA2Wrap').style.display=isEndo?'block':'none';document.getElementById('mTitle').textContent=isEndo?'Endoscopia — '+sl.toUpperCase():(ex?'Editar Cirurgia':'Nova — '+sl.toUpperCase());const b=document.getElementById('bSav');b.className='bsv '+(ex?'ed':(sl==='vns1'?'v1':'v2'));b.textContent='Salvar ✓';document.getElementById('sOv').classList.add('open');};
+window.closeMod=()=>{document.getElementById('sOv').classList.remove('open');editId=null;isEndo=false;};
+window.saveSurg=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}try{const salaEsc=document.getElementById('fSala').value;const t=document.getElementById('fT').value;const n=document.getElementById('fN').value.trim();const sr=document.getElementById('fS').value.trim();const l=document.getElementById('fL').value.trim();const r=document.getElementById('fRoom').value;const aId=document.getElementById('fA').value;const a2Id=document.getElementById('fA2').value;if(!n){toast('⚠️ Preencha o nome');return;}if(!isEndo && !t){toast('⚠️ Preencha o horário');return;}let anestName='',phone='',anest2Name='';if(aId){const a=anests.find(x=>x.id===aId);if(a){anestName=a.name;phone=a.phone||'';}}if(isEndo && a2Id){const a2=anests.find(x=>x.id===a2Id);if(a2){anest2Name=a2.name;}}const dt={sala:salaEsc,date:dateKey(currentDate),time:t||'',name:n,surgeon:sr||'',leito:l||'',room:r||'',anest:anestName||'',anest2:anest2Name||'',phone:phone||'',isEndo:isEndo===true};if(editId && !editId.startsWith('__ghost_')){await updateDoc(doc(db,'cirurgias',editId),dt);toast('✏️ Atualizada');}else{dt.status='pending';await addDoc(col,dt);toast('✅ Adicionada');}window.closeMod();}catch(err){toast('❌ Erro: '+err.message);console.error(err);}};
+window.openAnestList=()=>{if(!isAdmin){toast('⚠️ Só admin');return;}document.getElementById('aOv').classList.add('open');};
+window.closeAL=()=>document.getElementById('aOv').classList.remove('open');
+window.addAnest=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}const n=document.getElementById('aN').value.trim();const p=document.getElementById('aP').value.trim().replace(/\D/g,'');if(!n){toast('⚠️ Digite o nome');return;}await addDoc(colA,{name:n,phone:p});document.getElementById('aN').value='';document.getElementById('aP').value='';toast('✅ Cadastrado');};
+window.delAnest=async(id,n)=>{if(!isAdmin){toast('⚠️ Só admin');return;}if(confirm('Remover '+n+'?')){await deleteDoc(doc(db,'anestesistas',id));toast('🗑️ Removido');}};
+function renderAnestList(){const el=document.getElementById('anestList');if(!el)return;if(!anests.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhum cadastrado</p>';return;}el.innerHTML=anests.map(a=>'<div class="anest-item"><div><div class="anest-name">'+a.name+'</div>'+(a.phone?'<div class="anest-phone">'+a.phone+'</div>':'')+'</div><button class="anest-del" onclick="window.delAnest(\''+a.id+'\',\''+a.name+'\')">✕</button></div>').join('');}
+window.openImport=()=>{if(!isAdmin){toast('⚠️ Só admin');return;}document.getElementById('iTxt').value='';document.getElementById('iOv').classList.add('open');};
+window.closeImp=()=>document.getElementById('iOv').classList.remove('open');
+window.doImport=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}if(importing){toast('⏳ Aguarde...');return;}const txt=document.getElementById('iTxt').value;if(!txt.trim()){toast('⚠️ Cole a lista');return;}importing=true;const lines=txt.split('\n').map(l=>l.trim()).filter(l=>l);let curSala=null,count=0,skipped=0,duplicates=0;const dateStr=dateKey(currentDate);const qExist=query(col,where('date','==',dateStr));const snap=await getDocs(qExist);const existing=snap.docs.map(d=>d.data());const seenInThisImport=new Set();for(const line of lines){const u=line.toUpperCase().replace(/\s/g,'');if(u==='VNS1'||u.startsWith('VNS1-')||u.startsWith('VNS1:')){curSala='vns1';continue;}if(u==='VNS2'||u.startsWith('VNS2-')||u.startsWith('VNS2:')){curSala='vns2';continue;}if(!curSala)continue;const m=line.match(/^(\d{1,2}):(\d{2})\s*[-–]\s*(.+)$/);if(!m){skipped++;continue;}const time=m[1].padStart(2,'0')+':'+m[2];const rest=m[3].split(/\s*[-–]\s*/).map(x=>x.trim()).filter(x=>x);if(!rest.length){skipped++;continue;}const name=rest[0];const surgeon=rest[1]||'';const leito=rest[2]||'';const key=curSala+'|'+time+'|'+name.toLowerCase();if(seenInThisImport.has(key)){duplicates++;continue;}seenInThisImport.add(key);const already=existing.some(x=>x.sala===curSala && x.time===time && (x.name||'').toLowerCase()===name.toLowerCase());if(already){duplicates++;continue;}try{await addDoc(col,{sala:curSala,date:dateStr,time:time,name:name,surgeon:surgeon,leito:leito,room:'',anest:'',anest2:'',phone:'',status:'pending',isEndo:false});count++;}catch(e){skipped++;}}importing=false;let msg='✅ '+count+' importadas';if(duplicates)msg+=' · '+duplicates+' duplicadas';toast(msg);window.closeImp();};
+window.openNotifs=()=>{renderNotifList();notifs.forEach(n=>n.read=true);saveNotifs();document.getElementById('nOv').classList.add('open');renderNotifBanner();updateNotifBadge();};
+window.closeNotifs=()=>document.getElementById('nOv').classList.remove('open');
+window.clearNotifs=()=>{if(confirm('Limpar todas?')){notifs=[];saveNotifs();renderNotifList();renderNotifBanner();updateNotifBadge();toast('🔔 Limpas');}};
+window.markRead=(id)=>{const n=notifs.find(x=>x.id==id);if(n){n.read=true;saveNotifs();renderNotifBanner();updateNotifBadge();}};
+function renderNotifList(){const el=document.getElementById('notifList');if(!el)return;if(!notifs.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhuma notificação</p>';return;}el.innerHTML=notifs.map(n=>'<div class="notif-row"><div class="notif-ttl">'+n.title+'</div><div class="notif-sub">'+n.sub+' · '+n.time+'</div></div>').join('');}
+window.openSaida=()=>{if(isAdmin){document.getElementById('saidaAdminBox').style.display='block';document.getElementById('saidaViewerBox').style.display='none';updateSaidaSelect();}else{document.getElementById('saidaAdminBox').style.display='none';document.getElementById('saidaViewerBox').style.display='block';}document.getElementById('saOv').classList.add('open');renderSaidaList();};
+window.closeSaida=()=>document.getElementById('saOv').classList.remove('open');
+async function saveSaida(){const dateStr=dateKey(currentDate);const dref=doc(db,'saidas',dateStr);await setDoc(dref,{list:saidaList});}
+window.addSaida=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}const sel=document.getElementById('saSel');const id=sel.value;if(!id){toast('⚠️ Selecione');return;}const a=anests.find(x=>x.id===id);if(!a)return;if(saidaList.some(x=>x.id===id && !x.liberado)){toast('⚠️ Já está na escala');return;}saidaList.push({id:id,name:a.name,liberado:false,horario:''});await saveSaida();sel.value='';toast('✅ Adicionado');};
+window.liberarSaida=async(idx)=>{if(!isAdmin)return;const now=new Date();const timeStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');saidaList[idx].liberado=true;saidaList[idx].horario=timeStr;await saveSaida();toast('🏠 Liberado às '+timeStr);};
+window.unlibSaida=async(idx)=>{if(!isAdmin)return;saidaList[idx].liberado=false;saidaList[idx].horario='';await saveSaida();toast('↩️ Desfeito');};
+window.remSaida=async(idx)=>{if(!isAdmin)return;if(confirm('Remover '+saidaList[idx].name+'?')){saidaList.splice(idx,1);await saveSaida();toast('🗑️ Removido');}};
+window.moveSaida=async(idx,dir)=>{if(!isAdmin)return;const newIdx=idx+dir;if(newIdx<0||newIdx>=saidaList.length)return;const tmp=saidaList[idx];saidaList[idx]=saidaList[newIdx];saidaList[newIdx]=tmp;await saveSaida();};
+function classifySurg(s){const nome=(s.name||'').toLowerCase();const cir=(s.surgeon||'').toLowerCase().trim();for(const k of HEMO_KEYWORDS){if(nome.includes(k))return 'hemo';}for(const k of SADT_KEYWORDS){if(nome.includes(k))return 'sadt';}const cirParts=cir.split(/\s+/);if(cirParts.some(p=>SADT_SURGEONS.includes(p)))return 'sadt';return 'cc';}
+function getAnestStatus(name){const cir=all.filter(c=>(c.anest===name||c.anest2===name) && c.status!=='finished' && c.status!=='suspended' && c.status!=='external');if(!cir.length)return 'livre';return 'ocupado';}
+function getAnestSala(name){const cir=all.filter(c=>(c.anest===name||c.anest2===name) && c.status!=='finished' && c.status!=='suspended' && c.status!=='external');if(!cir.length)return null;const c=cir[0];const cat=classifySurg(c);if(cat==='sadt')return{type:'sadt',label:'SADT'};if(cat==='hemo')return{type:'hemo',label:'H'};if(c.room)return{type:'sala',label:c.room};return{type:'empty',label:'?'};}
+function renderSaidaList(){const el=document.getElementById('saidaList');if(!el)return;if(!saidaList.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhum anestesista adicionado</p>';return;}el.innerHTML=saidaList.map((s,i)=>{const stat=isAdmin?(s.liberado?'livre':getAnestStatus(s.name)):'';let salaTag='';if(isAdmin && !s.liberado && stat==='ocupado'){const sl=getAnestSala(s.name);if(sl)salaTag='<span class="saida-tag '+sl.type+'">'+sl.label+'</span>';}const adminBtns=isAdmin?salaTag+'<button class="saida-btn mv" onclick="window.moveSaida('+i+',-1)" '+(i===0?'disabled':'')+'>⬆️</button><button class="saida-btn mv" onclick="window.moveSaida('+i+',1)" '+(i===saidaList.length-1?'disabled':'')+'>⬇️</button>'+(s.liberado?'<button class="saida-btn unlib" onclick="window.unlibSaida('+i+')">↩️</button>':'<button class="saida-btn lib" onclick="window.liberarSaida('+i+')">🏠 Liberar</button>')+'<button class="saida-btn rem" onclick="window.remSaida('+i+')">✕</button>':'';const hrInfo=(s.liberado && isAdmin)?'<div class="saida-hr">🏠 Liberado às '+s.horario+'</div>':'';return '<div class="saida-row '+(s.liberado?'liberado':'')+'"><div class="saida-info"><div class="saida-name"><span class="saida-num '+stat+'">'+(i+1)+'</span>'+s.name+'</div>'+hrInfo+'</div><div class="saida-actions">'+adminBtns+'</div></div>';}).join('');}
+function getReportData(){const cats={cc:new Set(),sadt:new Set(),hemo:new Set()};for(const s of all){if(s.status==='suspended')continue;const cat=classifySurg(s);if(s.anest)cats[cat].add(s.anest);if(s.anest2)cats[cat].add(s.anest2);}return{cc:Array.from(cats.cc).sort((a,b)=>a.localeCompare(b)),sadt:Array.from(cats.sadt).sort((a,b)=>a.localeCompare(b)),hemo:Array.from(cats.hemo).sort((a,b)=>a.localeCompare(b))};}
+window.openRel=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}const dateStr=dateKey(currentDate);const dRef=doc(db,'relatorios',dateStr);try{const snap=await getDoc(dRef);currentRelObs=snap.exists()?(snap.data().obs||''):'';}catch(e){currentRelObs='';}document.getElementById('relTitle').textContent='📊 Relatório · '+String(currentDate.getDate()).padStart(2,'0')+'/'+months[currentDate.getMonth()];document.getElementById('relView').style.display='block';document.getElementById('relEdit').style.display='none';renderRel();document.getElementById('rOv').classList.add('open');};
+window.closeRel=()=>document.getElementById('rOv').classList.remove('open');
+function renderRel(){const data=getReportData();const obsEl=document.getElementById('relObsDisplay');if(currentRelObs && currentRelObs.trim()){obsEl.textContent=currentRelObs;obsEl.classList.remove('empty');}else{obsEl.textContent='Nenhuma observação registrada.';obsEl.classList.add('empty');}const fmtArr=arr=>arr.length?arr.map(n=>'• '+n).join('<br>'):'<span class="rel-empty">Nenhum anestesista</span>';document.getElementById('relCC').innerHTML=fmtArr(data.cc);document.getElementById('relSADT').innerHTML=fmtArr(data.sadt);document.getElementById('relHemo').innerHTML=fmtArr(data.hemo);}
+window.editRelObs=()=>{document.getElementById('relObsInput').value=currentRelObs;document.getElementById('relView').style.display='none';document.getElementById('relEdit').style.display='block';};
+window.cancelRelObs=()=>{document.getElementById('relView').style.display='block';document.getElementById('relEdit').style.display='none';};
+window.saveRelObs=async()=>{currentRelObs=document.getElementById('relObsInput').value;const dateStr=dateKey(currentDate);await setDoc(doc(db,'relatorios',dateStr),{obs:currentRelObs,date:dateStr});document.getElementById('relView').style.display='block';document.getElementById('relEdit').style.display='none';renderRel();toast('✅ Observação salva');};
+window.copyRel=async()=>{const data=getReportData();const dStr=String(currentDate.getDate()).padStart(2,'0')+'/'+months[currentDate.getMonth()]+'/'+currentDate.getFullYear();let txt='📊 RELATÓRIO · '+dStr+'\n\n';if(currentRelObs && currentRelObs.trim()){txt+='📝 OBSERVAÇÕES:\n'+currentRelObs+'\n\n';}txt+='🔪 CENTRO CIRÚRGICO:\n'+(data.cc.length?data.cc.map(n=>'• '+n).join('\n'):'(nenhum)')+'\n\n';txt+='🏥 SADT:\n'+(data.sadt.length?data.sadt.map(n=>'• '+n).join('\n'):'(nenhum)')+'\n\n';txt+='🩸 HEMODINÂMICA:\n'+(data.hemo.length?data.hemo.map(n=>'• '+n).join('\n'):'(nenhum)');try{await navigator.clipboard.writeText(txt);toast('📋 Copiado!');}catch(e){toast('❌ Não foi possível copiar');}};
+window.openCir=()=>{if(!isAdmin){toast('⚠️ Só admin');return;}document.getElementById('cirOv').classList.add('open');setupCirSearchOnce();renderCirList();updateCirStats();};
+window.closeCir=()=>document.getElementById('cirOv').classList.remove('open');
+function setupCirSearchOnce(){if(cirSearchInitialized)return;const inp=document.getElementById('cirSearch');if(!inp)return;inp.addEventListener('input',function(){cirSearchText=norm(this.value);renderCirList();});cirSearchInitialized=true;}
+function updateCirStats(){const tot=cirurgioes.length;const int=cirurgioes.filter(c=>c.tipo==='interno').length;const ext=cirurgioes.filter(c=>c.tipo==='externo').length;const va=cirurgioes.filter(c=>c.tipo==='varia').length;const elT=document.getElementById('csTotal');const elI=document.getElementById('csInt');const elE=document.getElementById('csExt');const elV=document.getElementById('csVar');if(elT)elT.textContent=tot;if(elI)elI.textContent=int;if(elE)elE.textContent=ext;if(elV)elV.textContent=va;}
+window.setCirFilter=(f)=>{cirFilter=f;document.querySelectorAll('.cir-filt').forEach(b=>b.classList.remove('on'));const map={'all':'filtAll','interno':'filtInt','externo':'filtExt','varia':'filtVar'};const btn=document.getElementById(map[f]);if(btn)btn.classList.add('on');renderCirList();};
+function renderCirList(){const el=document.getElementById('cirList');if(!el)return;let list=cirurgioes.slice();if(cirFilter!=='all')list=list.filter(c=>c.tipo===cirFilter);if(cirSearchText)list=list.filter(c=>norm(c.name).includes(cirSearchText));if(!list.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Nenhum encontrado</p>';return;}el.innerHTML=list.map(c=>{const tag=c.tipo==='interno'?'<span class="cir-tag int">INT</span>':c.tipo==='externo'?'<span class="cir-tag ext">EXT</span>':'<span class="cir-tag var">VAR</span>';const safeName=c.name.replace(/'/g,"\\'");return '<div class="cir-item"><span class="cir-name">'+c.name+'</span>'+tag+'<div class="cir-actions"><button class="cir-btn ed" onclick="window.editCirTipo(\''+c.id+'\')">✏️</button><button class="cir-btn del" onclick="window.delCir(\''+c.id+'\',\''+safeName+'\')">✕</button></div></div>';}).join('');}
+window.addCirurgiao=async()=>{if(!isAdmin){toast('⚠️ Só admin');return;}const n=document.getElementById('cirNewName').value.trim();const t=document.getElementById('cirNewType').value;if(!n){toast('⚠️ Digite o nome');return;}if(cirurgioes.some(c=>c.name.toLowerCase()===n.toLowerCase())){toast('⚠️ Já cadastrado');return;}await addDoc(colC,{name:n,tipo:t});document.getElementById('cirNewName').value='';toast('✅ Adicionado');};
+window.editCirTipo=async(id)=>{if(!isAdmin)return;const c=cirurgioes.find(x=>x.id===id);if(!c)return;const novo=prompt('Tipo: 1=Interno, 2=Externo, 3=Varia\nAtual: '+c.tipo,c.tipo==='interno'?'1':c.tipo==='externo'?'2':'3');if(!novo)return;const map={'1':'interno','2':'externo','3':'varia'};if(!map[novo]){toast('⚠️ Opção inválida');return;}await updateDoc(doc(db,'cirurgioes',id),{tipo:map[novo]});toast('✏️ Atualizado');};
+window.delCir=async(id,n)=>{if(!isAdmin)return;if(confirm('Remover '+n+'?')){await deleteDoc(doc(db,'cirurgioes',id));toast('🗑️ Removido');}};
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+document.getElementById('sOv').addEventListener('click',e=>{if(e.target.id==='sOv')window.closeMod();});
+document.getElementById('dpOv').addEventListener('click',e=>{if(e.target.id==='dpOv')window.closeDP();});
+document.getElementById('aOv').addEventListener('click',e=>{if(e.target.id==='aOv')window.closeAL();});
+document.getElementById('iOv').addEventListener('click',e=>{if(e.target.id==='iOv')window.closeImp();});
+document.getElementById('lOv').addEventListener('click',e=>{if(e.target.id==='lOv')window.closeLogin();});
+document.getElementById('nOv').addEventListener('click',e=>{if(e.target.id==='nOv')window.closeNotifs();});
+document.getElementById('saOv').addEventListener('click',e=>{if(e.target.id==='saOv')window.closeSaida();});
+document.getElementById('rOv').addEventListener('click',e=>{if(e.target.id==='rOv')window.closeRel();});
+document.getElementById('cirOv').addEventListener('click',e=>{if(e.target.id==='cirOv')window.closeCir();});
+updateAdminUI();
+loadDate(new Date());
+</script>
+</body>
+</html>
