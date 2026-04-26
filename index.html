@@ -517,10 +517,153 @@ window.closeAg=()=>document.getElementById('agOv').classList.remove('open');
 
 window.processarPDF=async(ev)=>{const file=ev.target.files[0];if(!file)return;document.getElementById('agUpLbl').textContent='📄 '+file.name;document.getElementById('agUpSub').textContent='Lendo PDF...';document.getElementById('agLoading').style.display='block';document.getElementById('agResults').style.display='none';document.getElementById('agDebugBox').style.display='none';try{const arrayBuffer=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:arrayBuffer}).promise;let textoCompleto='';for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const txt=await page.getTextContent();const itens=txt.items.slice().sort((a,b)=>{const ya=a.transform[5];const yb=b.transform[5];if(Math.abs(ya-yb)>3)return yb-ya;return a.transform[4]-b.transform[4];});let linhaAtualY=null;let linhaAtual='';const linhasPg=[];for(const item of itens){const y=item.transform[5];if(linhaAtualY===null||Math.abs(y-linhaAtualY)<=3){linhaAtual+=item.str+' ';linhaAtualY=y;}else{if(linhaAtual.trim())linhasPg.push(linhaAtual.trim());linhaAtual=item.str+' ';linhaAtualY=y;}}if(linhaAtual.trim())linhasPg.push(linhaAtual.trim());textoCompleto+=linhasPg.join('\n')+'\n';}const cirurgias=parseTasy(textoCompleto);agendaResultados=cirurgias.map(c=>analisarCirurgia(c));document.getElementById('agLoading').style.display='none';if(!agendaResultados.length){const dbg=document.getElementById('agDebugBox');dbg.className='ag-debug';dbg.style.display='block';dbg.textContent='⚠️ Nenhuma cirurgia identificada. Texto extraído:\n\n'+textoCompleto.split('\n').slice(0,150).join('\n');document.getElementById('agUpSub').textContent='Veja debug abaixo';return;}document.getElementById('agResults').style.display='block';renderAgenda();toast('✅ '+agendaResultados.length+' cirurgias processadas');}catch(err){console.error(err);document.getElementById('agLoading').style.display='none';toast('❌ Erro ao ler PDF: '+err.message);document.getElementById('agUpSub').textContent='Erro - tente novamente';}};
 
-function parseTasy(textoCompleto){const linhas=textoCompleto.split('\n').map(l=>l.trim()).filter(l=>l);const paginas=[];let pg=novaPg();function novaPg(){return{vinc:[],proc:[],medico:[],hora:[],staut:[]};}function pushPg(){if(pg.hora.length>0)paginas.push(pg);pg=novaPg();}let modo=null;for(let i=0;i<linhas.length;i++){const ln=linhas[i];if(/HMSL\s*-\s*Cirurgias\s*Programadas/i.test(ln)){pushPg();modo=null;continue;}if(/^Vinc\s+anestesista/i.test(ln)){modo='vinc';const apos=ln.replace(/^Vinc\s+anestesista\s*DT\s*Internação\s*/i,'').trim();if(apos)addBloco(apos,modo,pg);continue;}if(/^Nome\s+convenio/i.test(ln)){modo='convenio';continue;}if(/^Cd\s+Nome\s+proc/i.test(ln)){modo='proc';const apos=ln.replace(/^Cd\s+Nome\s+proc\s*/i,'').trim();if(apos)addBloco(apos,modo,pg);continue;}if(/^Nome\s+medico/i.test(ln)){modo='medico';const apos=ln.replace(/^Nome\s+medico\s*Tel\.?\s*/i,'').trim();if(apos)addBloco(apos,modo,pg);continue;}if(/^Dt\s+Nasc/i.test(ln)){modo='dtnasc';continue;}if(/^Paciente\s*-\s*idade/i.test(ln)){modo='paciente';continue;}if(/^Nr\s+reserva/i.test(ln)){modo='nrreserva';continue;}if(/^Hora\b/i.test(ln)){modo='hora';const apos=ln.replace(/^Hora\s*/i,'').trim();if(apos)addBloco(apos,modo,pg);continue;}if(/^Dt\s+cirurgia/i.test(ln)){modo='dtcir';continue;}if(/^St\s+Autorização/i.test(ln)){modo='staut';const apos=ln.replace(/^St\s+Autorização\s*/i,'').trim();if(apos)addBloco(apos,modo,pg);continue;}if(/^(Server|Desktop|Página|Impresso|Aposent|NR\.?\s*Atend|Data\s+de|Até|maiely|CATE|Total\s+de\s+Cirurgias|Classif|Tel\.|Nome\s+convenio|^\d{2}\/\d{2}\/\d{4}\s*$|^Pendente)/i.test(ln)){if(modo==='staut'&&!/HMSL/i.test(ln))addBloco(ln,'staut',pg);continue;}if(modo)addBloco(ln,modo,pg);}pushPg();function addBloco(txt,tipo,pg){if(tipo==='vinc'){const rx=/(Interno|Sem\s*Anestesista)/g;let m;while((m=rx.exec(txt))!==null)pg.vinc.push(/interno/i.test(m[1])?'interno':'externo');}else if(tipo==='proc'){const rx=/(\d{8})\s+([A-Za-zÀ-ÿ][^\d]*?)(?=\s+\d{8}|\s+Desktop|$)/g;let m;while((m=rx.exec(txt))!==null){const nome=m[2].trim().replace(/[-–]+\s*$/,'').replace(/\s+/g,' ');if(nome.length>2)pg.proc.push(nome);}}else if(tipo==='medico'){const partes=txt.split(/\s+(?=\d{4,11}-?\s|\d{4}-\s)/);for(let p of partes){p=p.replace(/^\s*\d{4,11}-?\s*/,'').replace(/\s*\d{4,11}-?\s*$/,'').trim();const nome=p.replace(/\s*\d{4,11}-?\s*$/,'').replace(/\s+/g,' ').trim();if(nome && /^[A-Za-zÀ-ÿ]/.test(nome) && nome.length>3 && !/^Tel/i.test(nome))pg.medico.push(nome);}}else if(tipo==='hora'){const rx=/\b(\d{2}:\d{2})\b/g;let m;while((m=rx.exec(txt))!==null)pg.hora.push(m[1]);}else if(tipo==='staut'){pg.staut.push(txt);}}const cirurgias=[];for(const pg of paginas){const torres=detectarTorres(pg);const n=Math.min(pg.hora.length,pg.medico.length,pg.proc.length);for(let i=0;i<n;i++){const torre=torres[i];if(!torre||torre==='onco')continue;const cirurgiao=(pg.medico[i]||'').replace(/\s+/g,' ').trim();const cirurgia=(pg.proc[i]||'').replace(/[-–]+\s*$/,'').replace(/\s+/g,' ').trim();const tipoPdf=pg.vinc[i]||'desconhecido';if(!cirurgiao||cirurgiao.length<3)continue;cirurgias.push({hora:pg.hora[i],torre:torre,cirurgiao:cirurgiao,cirurgia:cirurgia||'(não identificado)',tipoPdf:tipoPdf});}}return cirurgias;}
+function parseTasy(textoCompleto){
+const linhas=textoCompleto.split('\n').map(l=>l.trim()).filter(l=>l);
+const paginas=[];
+let pg={vinc:[],proc:[],medico:[],hora:[],staut:[]};
+let modo=null;
+for(let i=0;i<linhas.length;i++){
+const ln=linhas[i];
+if(/HMSL.*Cirurgias.*Programadas/i.test(ln)){
+if(pg.hora.length>0)paginas.push(pg);
+pg={vinc:[],proc:[],medico:[],hora:[],staut:[]};
+modo=null;
+continue;
+}
+if(/^Vinc\s+anestesista/i.test(ln)){
+modo='vinc';
+const apos=ln.replace(/^Vinc\s+anestesista\s*DT\s*Internação\s*/i,'').trim();
+if(apos)addBloco(apos,'vinc',pg);
+continue;
+}
+if(/^Cd\s+Nome\s+proc/i.test(ln)){
+modo='proc';
+const apos=ln.replace(/^Cd\s+Nome\s+proc\s*/i,'').trim();
+if(apos)addBloco(apos,'proc',pg);
+continue;
+}
+if(/^Nome\s+medico/i.test(ln)){
+modo='medico';
+const apos=ln.replace(/^Nome\s+medico\s*Tel\.?\s*/i,'').trim();
+if(apos)addBloco(apos,'medico',pg);
+continue;
+}
+if(/^Hora\b/i.test(ln)){
+modo='hora';
+const apos=ln.replace(/^Hora\s*/i,'').trim();
+if(apos)addBloco(apos,'hora',pg);
+continue;
+}
+if(/^St\s+Autorização/i.test(ln)){
+modo='staut';
+const apos=ln.replace(/^St\s+Autorização\s*/i,'').trim();
+if(apos)addBloco(apos,'staut',pg);
+continue;
+}
+if(/^Nome\s+convenio/i.test(ln)){modo='convenio';continue;}
+if(/^Dt\s+Nasc/i.test(ln)){modo='dtnasc';continue;}
+if(/^Paciente/i.test(ln)){modo='paciente';continue;}
+if(/^Nr\s+reserva/i.test(ln)){modo='nrreserva';continue;}
+if(/^Dt\s+cirurgia/i.test(ln)){modo='dtcir';continue;}
+if(/^(Server|Desktop|Página|Impresso|Aposent|NR\.?\s*Atend|Data\s+de|Até|maiely|CATE|Total)/i.test(ln)){
+if(modo==='staut'&&!/HMSL/i.test(ln))addBloco(ln,'staut',pg);
+continue;
+}
+if(modo)addBloco(ln,modo,pg);
+}
+if(pg.hora.length>0)paginas.push(pg);
 
-function detectarTorres(pg){const total=pg.hora.length;const torres=new Array(total).fill(null);const stCompleto=pg.staut.join(' | ');const sequencia=[];const partes=stCompleto.split(/\s*\|\s*|\s+/);let torreCorrente=null;let idxCirurgia=0;for(const item of pg.staut){const tokens=item.split(/\s{2,}|\s+(?=27\/|26\/|28\/|Pendente|Onco|VNS|Centro)/);for(const tk of tokens){const t=tk.trim();if(!t)continue;if(/Onco\s*Star/i.test(t)){torreCorrente='onco';continue;}if(/VNS\s*1/i.test(t)){torreCorrente='vns1';continue;}if(/VNS\s*2/i.test(t)){torreCorrente='vns2';continue;}if(/Centro\s+Cirúrgico/i.test(t))continue;if(/^Pendente/i.test(t))continue;if(/^\d{2}\/\d{2}\/\d{4}$/.test(t)){if(idxCirurgia<total){torres[idxCirurgia]=torreCorrente;idxCirurgia++;}}}}for(let i=0;i<total;i++){if(!torres[i] && i>0)torres[i]=torres[i-1];}let primeiraValida=null;for(let i=0;i<total;i++){if(torres[i] && torres[i]!=='onco'){primeiraValida=torres[i];break;}}for(let i=0;i<total;i++){if(!torres[i])torres[i]=primeiraValida||'vns1';}return torres;}
-function detectarTorres(pg){const total=pg.hora.length;const torres=new Array(total).fill(null);const stTexto=pg.stAut.join(' ');let torreAtual=null;if(/Onco\s*Star/i.test(stTexto) && !/VNS\s*1/i.test(stTexto.split('Onco Star')[0]||'')){torreAtual='onco';}const marcadores=[];const stCompleto=pg.stAut.join('\n');let oncoIdx=-1,vns1Idx=-1,vns2Idx=-1;const idxOnco=stCompleto.search(/Onco\s*Star/i);const idxVns1=stCompleto.search(/VNS\s*1/i);const idxVns2=stCompleto.search(/VNS\s*2/i);const ordens=[];if(idxOnco>=0)ordens.push({pos:idxOnco,torre:'onco'});if(idxVns1>=0)ordens.push({pos:idxVns1,torre:'vns1'});if(idxVns2>=0)ordens.push({pos:idxVns2,torre:'vns2'});ordens.sort((a,b)=>a.pos-b.pos);if(!ordens.length){return torres.fill('vns1');}let pendentes=0;for(const item of pg.stAut){if(/Onco\s*Star/i.test(item)){torreAtual='onco';}else if(/VNS\s*1/i.test(item)){torreAtual='vns1';}else if(/VNS\s*2/i.test(item)){torreAtual='vns2';}else if(/Pendente/i.test(item)||/Centro\s+Cirúrgico/i.test(item)){if(torreAtual && pendentes<total){torres[pendentes]=torreAtual;}pendentes++;}}for(let i=0;i<total;i++){if(!torres[i]){if(i>0 && torres[i-1])torres[i]=torres[i-1];else if(ordens.length){const primeiraNaoOnco=ordens.find(o=>o.torre!=='onco');torres[i]=primeiraNaoOnco?primeiraNaoOnco.torre:ordens[0].torre;}}}let primeiraValida=null;for(let i=0;i<total;i++){if(torres[i] && torres[i]!=='onco'){primeiraValida=torres[i];break;}}for(let i=0;i<total;i++){if(!torres[i] && primeiraValida)torres[i]=primeiraValida;}return torres;}
+function addBloco(txt,tipo,p){
+if(tipo==='vinc'){
+const rx=/(Interno|Sem\s*Anestesista)/g;
+let m;
+while((m=rx.exec(txt))!==null){
+p.vinc.push(/interno/i.test(m[1])?'interno':'externo');
+}
+}else if(tipo==='proc'){
+const rx=/(\d{8})\s+([^\d][^\n]*?)(?=\s+\d{8}|\s+Desktop|$)/g;
+let m;
+while((m=rx.exec(txt))!==null){
+const nome=m[2].trim().replace(/[-–]+\s*$/,'').replace(/\s+/g,' ');
+if(nome.length>2)p.proc.push(nome);
+}
+}else if(tipo==='medico'){
+const tokens=txt.split(/\s+/);
+let nomeAtual=[];
+for(const tk of tokens){
+if(/^\d{4,11}-?$/.test(tk)||/^\d-$/.test(tk)){
+if(nomeAtual.length>0){
+const nome=nomeAtual.join(' ').trim();
+if(nome.length>3 && /^[A-Za-zÀ-ÿ]/.test(nome) && !/^Tel/i.test(nome))p.medico.push(nome);
+nomeAtual=[];
+}
+}else{
+nomeAtual.push(tk);
+}
+}
+if(nomeAtual.length>0){
+const nome=nomeAtual.join(' ').trim();
+if(nome.length>3 && /^[A-Za-zÀ-ÿ]/.test(nome) && !/^Tel/i.test(nome))p.medico.push(nome);
+}
+}else if(tipo==='hora'){
+const rx=/\b(\d{2}:\d{2})\b/g;
+let m;
+while((m=rx.exec(txt))!==null)p.hora.push(m[1]);
+}else if(tipo==='staut'){
+p.staut.push(txt);
+}
+}
+
+const cirurgias=[];
+for(const pgi of paginas){
+const torres=detectarTorres(pgi);
+const n=Math.min(pgi.hora.length,pgi.medico.length,pgi.proc.length);
+for(let i=0;i<n;i++){
+const torre=torres[i];
+if(!torre||torre==='onco')continue;
+const cirurgiao=(pgi.medico[i]||'').replace(/\s+/g,' ').trim();
+const cirurgia=(pgi.proc[i]||'').replace(/[-–]+\s*$/,'').replace(/\s+/g,' ').trim();
+const tipoPdf=pgi.vinc[i]||'desconhecido';
+if(!cirurgiao||cirurgiao.length<3)continue;
+cirurgias.push({hora:pgi.hora[i],torre:torre,cirurgiao:cirurgiao,cirurgia:cirurgia||'(não identificado)',tipoPdf:tipoPdf});
+}
+}
+return cirurgias;
+}
+
+function detectarTorres(pg){
+const total=pg.hora.length;
+const torres=new Array(total).fill(null);
+let torreCorrente=null;
+let idxCirurgia=0;
+for(const item of pg.staut){
+const tokens=item.split(/\s+/);
+for(const tk of tokens){
+const t=tk.trim();
+if(!t)continue;
+if(/Onco/i.test(t)){torreCorrente='onco';continue;}
+if(/^VNS1/i.test(t)){torreCorrente='vns1';continue;}
+if(/^VNS2/i.test(t)){torreCorrente='vns2';continue;}
+if(/^Centro/i.test(t))continue;
+if(/^Pendente/i.test(t))continue;
+if(/^Sp$|^Oncologia$|^Ltda$|^Cirúrgico$|^autorização$/i.test(t))continue;
+if(/^\d{2}\/\d{2}\/\d{4}$/.test(t)){
+if(idxCirurgia<total){
+torres[idxCirurgia]=torreCorrente;
+idxCirurgia++;
+}
+}
+}
+}
+let primeiraValida=null;
+for(let i=0;i<total;i++){
+if(torres[i] && torres[i]!=='onco'){primeiraValida=torres[i];break;}
+}
+for(let i=0;i<total;i++){
+if(!torres[i])torres[i]=primeiraValida||'vns1';
+}
+return torres;
+}
 
 function analisarCirurgia(c){const nomeNorm=norm(c.cirurgiao);let cadastro=cirurgioes.find(x=>norm(x.name)===nomeNorm);if(!cadastro){cadastro=cirurgioes.find(x=>{const xn=norm(x.name);return xn.includes(nomeNorm)||nomeNorm.includes(xn);});}let status='ok',msg='';if(!cadastro){status='miss';msg='⚠️ Cirurgião não cadastrado';}else if(cadastro.tipo==='varia'){status='var';msg='🟡 Cirurgião marcado como "Varia" - confirmar';}else if(c.tipoPdf==='desconhecido'){status='alert';msg='⚠️ Tipo no PDF não identificado';}else if(c.tipoPdf!==cadastro.tipo){status='alert';msg='🚨 Divergência: PDF='+(c.tipoPdf==='interno'?'Interno':'Externo')+' / Cadastro='+(cadastro.tipo==='interno'?'Interno':'Externo');}return Object.assign({},c,{cadastro:cadastro,status:status,msg:msg});}
 
